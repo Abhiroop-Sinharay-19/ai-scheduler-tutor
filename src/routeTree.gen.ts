@@ -10,33 +10,179 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShellRouteImport } from './routes/_shell'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ShellDashboardRouteImport } from './routes/_shell.dashboard'
+import { Route as ShellProfileRouteImport } from './routes/_shell.profile'
+import { Route as ShellProgressRouteImport } from './routes/_shell.progress'
+import { Route as ShellQuizzesRouteImport } from './routes/_shell.quizzes'
+import { Route as ShellResourcesRouteImport } from './routes/_shell.resources'
+import { Route as ShellSimulatorRouteImport } from './routes/_shell.simulator'
+import { Route as ShellTutorRouteImport } from './routes/_shell.tutor'
+import { Route as ShellAlgorithmsIndexRouteImport } from './routes/_shell.algorithms.index'
+import { Route as ShellAlgorithmsIdRouteImport } from './routes/_shell.algorithms.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShellRoute = ShellRouteImport.update({
+  id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShellDashboardRoute = ShellDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellProfileRoute = ShellProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellProgressRoute = ShellProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellQuizzesRoute = ShellQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellResourcesRoute = ShellResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellSimulatorRoute = ShellSimulatorRouteImport.update({
+  id: '/simulator',
+  path: '/simulator',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellTutorRoute = ShellTutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellAlgorithmsIndexRoute = ShellAlgorithmsIndexRouteImport.update({
+  id: '/algorithms/',
+  path: '/algorithms/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellAlgorithmsIdRoute = ShellAlgorithmsIdRouteImport.update({
+  id: '/algorithms/$id',
+  path: '/algorithms/$id',
+  getParentRoute: () => ShellRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/dashboard': typeof ShellDashboardRoute
+  '/profile': typeof ShellProfileRoute
+  '/progress': typeof ShellProgressRoute
+  '/quizzes': typeof ShellQuizzesRoute
+  '/resources': typeof ShellResourcesRoute
+  '/simulator': typeof ShellSimulatorRoute
+  '/tutor': typeof ShellTutorRoute
+  '/algorithms/$id': typeof ShellAlgorithmsIdRoute
+  '/algorithms/': typeof ShellAlgorithmsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/dashboard': typeof ShellDashboardRoute
+  '/profile': typeof ShellProfileRoute
+  '/progress': typeof ShellProgressRoute
+  '/quizzes': typeof ShellQuizzesRoute
+  '/resources': typeof ShellResourcesRoute
+  '/simulator': typeof ShellSimulatorRoute
+  '/tutor': typeof ShellTutorRoute
+  '/algorithms/$id': typeof ShellAlgorithmsIdRoute
+  '/algorithms': typeof ShellAlgorithmsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_shell': typeof ShellRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/_shell/dashboard': typeof ShellDashboardRoute
+  '/_shell/profile': typeof ShellProfileRoute
+  '/_shell/progress': typeof ShellProgressRoute
+  '/_shell/quizzes': typeof ShellQuizzesRoute
+  '/_shell/resources': typeof ShellResourcesRoute
+  '/_shell/simulator': typeof ShellSimulatorRoute
+  '/_shell/tutor': typeof ShellTutorRoute
+  '/_shell/algorithms/$id': typeof ShellAlgorithmsIdRoute
+  '/_shell/algorithms/': typeof ShellAlgorithmsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/profile'
+    | '/progress'
+    | '/quizzes'
+    | '/resources'
+    | '/simulator'
+    | '/tutor'
+    | '/algorithms/$id'
+    | '/algorithms/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/profile'
+    | '/progress'
+    | '/quizzes'
+    | '/resources'
+    | '/simulator'
+    | '/tutor'
+    | '/algorithms/$id'
+    | '/algorithms'
+  id:
+    | '__root__'
+    | '/'
+    | '/_shell'
+    | '/login'
+    | '/signup'
+    | '/_shell/dashboard'
+    | '/_shell/profile'
+    | '/_shell/progress'
+    | '/_shell/quizzes'
+    | '/_shell/resources'
+    | '/_shell/simulator'
+    | '/_shell/tutor'
+    | '/_shell/algorithms/$id'
+    | '/_shell/algorithms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShellRoute: typeof ShellRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +194,124 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_shell': {
+      id: '/_shell'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ShellRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_shell/dashboard': {
+      id: '/_shell/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof ShellDashboardRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/profile': {
+      id: '/_shell/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ShellProfileRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/progress': {
+      id: '/_shell/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof ShellProgressRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/quizzes': {
+      id: '/_shell/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof ShellQuizzesRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/resources': {
+      id: '/_shell/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ShellResourcesRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/simulator': {
+      id: '/_shell/simulator'
+      path: '/simulator'
+      fullPath: '/simulator'
+      preLoaderRoute: typeof ShellSimulatorRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/tutor': {
+      id: '/_shell/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof ShellTutorRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/algorithms/': {
+      id: '/_shell/algorithms/'
+      path: '/algorithms'
+      fullPath: '/algorithms/'
+      preLoaderRoute: typeof ShellAlgorithmsIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/algorithms/$id': {
+      id: '/_shell/algorithms/$id'
+      path: '/algorithms/$id'
+      fullPath: '/algorithms/$id'
+      preLoaderRoute: typeof ShellAlgorithmsIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
   }
 }
 
+interface ShellRouteChildren {
+  ShellDashboardRoute: typeof ShellDashboardRoute
+  ShellProfileRoute: typeof ShellProfileRoute
+  ShellProgressRoute: typeof ShellProgressRoute
+  ShellQuizzesRoute: typeof ShellQuizzesRoute
+  ShellResourcesRoute: typeof ShellResourcesRoute
+  ShellSimulatorRoute: typeof ShellSimulatorRoute
+  ShellTutorRoute: typeof ShellTutorRoute
+  ShellAlgorithmsIdRoute: typeof ShellAlgorithmsIdRoute
+  ShellAlgorithmsIndexRoute: typeof ShellAlgorithmsIndexRoute
+}
+
+const ShellRouteChildren: ShellRouteChildren = {
+  ShellDashboardRoute: ShellDashboardRoute,
+  ShellProfileRoute: ShellProfileRoute,
+  ShellProgressRoute: ShellProgressRoute,
+  ShellQuizzesRoute: ShellQuizzesRoute,
+  ShellResourcesRoute: ShellResourcesRoute,
+  ShellSimulatorRoute: ShellSimulatorRoute,
+  ShellTutorRoute: ShellTutorRoute,
+  ShellAlgorithmsIdRoute: ShellAlgorithmsIdRoute,
+  ShellAlgorithmsIndexRoute: ShellAlgorithmsIndexRoute,
+}
+
+const ShellRouteWithChildren = ShellRoute._addFileChildren(ShellRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShellRoute: ShellRouteWithChildren,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
