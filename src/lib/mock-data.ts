@@ -5,6 +5,9 @@ export interface Student {
   email: string;
   level: "Beginner" | "Intermediate" | "Advanced";
   streak: number;
+  course: string;
+  xp: number;
+  badges: { label: string; icon: string; earned: boolean }[];
 }
 
 export interface AlgorithmInfo {
@@ -28,6 +31,14 @@ export const student: Student = {
   email: "abhi@student.edu",
   level: "Intermediate",
   streak: 7,
+  course: "Operating Systems — CPU Scheduling",
+  xp: 2480,
+  badges: [
+    { label: "First Simulation", icon: "\u26a1", earned: true },
+    { label: "Gantt Master", icon: "\ud83d\udcca", earned: true },
+    { label: "Quiz Streak x5", icon: "\ud83d\udd25", earned: true },
+    { label: "Preemption Pro", icon: "\ud83c\udfaf", earned: false },
+  ],
 };
 
 export const dashboardStats = {
