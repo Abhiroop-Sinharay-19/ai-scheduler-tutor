@@ -15,6 +15,7 @@ import { Route as ShellDashboardRouteImport } from './routes/_shell.dashboard'
 import { Route as ShellSimulatorRouteImport } from './routes/_shell.simulator'
 import { Route as ShellTutorRouteImport } from './routes/_shell.tutor'
 import { Route as ShellAlgorithmsIndexRouteImport } from './routes/_shell.algorithms.index'
+import { Route as ShellAlgorithmsIdRouteImport } from './routes/_shell.algorithms.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,12 +46,18 @@ const ShellAlgorithmsIndexRoute = ShellAlgorithmsIndexRouteImport.update({
   path: '/algorithms/',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellAlgorithmsIdRoute = ShellAlgorithmsIdRouteImport.update({
+  id: '/algorithms/$id',
+  path: '/algorithms/$id',
+  getParentRoute: () => ShellRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof ShellDashboardRoute
   '/simulator': typeof ShellSimulatorRoute
   '/tutor': typeof ShellTutorRoute
+  '/algorithms/$id': typeof ShellAlgorithmsIdRoute
   '/algorithms/': typeof ShellAlgorithmsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof ShellDashboardRoute
   '/simulator': typeof ShellSimulatorRoute
   '/tutor': typeof ShellTutorRoute
+  '/algorithms/$id': typeof ShellAlgorithmsIdRoute
   '/algorithms': typeof ShellAlgorithmsIndexRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,26 @@ export interface FileRoutesById {
   '/_shell/dashboard': typeof ShellDashboardRoute
   '/_shell/simulator': typeof ShellSimulatorRoute
   '/_shell/tutor': typeof ShellTutorRoute
+  '/_shell/algorithms/$id': typeof ShellAlgorithmsIdRoute
   '/_shell/algorithms/': typeof ShellAlgorithmsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/simulator' | '/tutor' | '/algorithms/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/simulator'
+    | '/tutor'
+    | '/algorithms/$id'
+    | '/algorithms/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/simulator' | '/tutor' | '/algorithms'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/simulator'
+    | '/tutor'
+    | '/algorithms/$id'
+    | '/algorithms'
   id:
     | '__root__'
     | '/'
@@ -81,6 +102,7 @@ export interface FileRouteTypes {
     | '/_shell/dashboard'
     | '/_shell/simulator'
     | '/_shell/tutor'
+    | '/_shell/algorithms/$id'
     | '/_shell/algorithms/'
   fileRoutesById: FileRoutesById
 }
@@ -133,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAlgorithmsIndexRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/algorithms/$id': {
+      id: '/_shell/algorithms/$id'
+      path: '/algorithms/$id'
+      fullPath: '/algorithms/$id'
+      preLoaderRoute: typeof ShellAlgorithmsIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
   }
 }
 
@@ -140,6 +169,7 @@ interface ShellRouteChildren {
   ShellDashboardRoute: typeof ShellDashboardRoute
   ShellSimulatorRoute: typeof ShellSimulatorRoute
   ShellTutorRoute: typeof ShellTutorRoute
+  ShellAlgorithmsIdRoute: typeof ShellAlgorithmsIdRoute
   ShellAlgorithmsIndexRoute: typeof ShellAlgorithmsIndexRoute
 }
 
@@ -147,6 +177,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellDashboardRoute: ShellDashboardRoute,
   ShellSimulatorRoute: ShellSimulatorRoute,
   ShellTutorRoute: ShellTutorRoute,
+  ShellAlgorithmsIdRoute: ShellAlgorithmsIdRoute,
   ShellAlgorithmsIndexRoute: ShellAlgorithmsIndexRoute,
 }
 
