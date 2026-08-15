@@ -126,7 +126,7 @@ function Landing() {
           <div className="panel absolute -bottom-10 left-4 right-4 p-4 backdrop-blur-xl">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Round Robin · quantum 3</span>
-              <span className="font-mono">avg wait {demo.averages.waiting.toFixed(2)}ms</span>
+              <span className="font-mono">avg wait {demo.metrics.avgWaiting.toFixed(2)}ms</span>
             </div>
             <div className="mt-3">
               <GanttChart gantt={demo.gantt} names={demoProcesses.map((p) => p.name)} runKey={1} />
