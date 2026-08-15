@@ -122,8 +122,9 @@ function Landing() {
             height={1024}
             alt="Glowing Gantt chart visualisation of CPU processes executing over time"
             className="rounded-3xl border border-border/70 shadow-2xl"
+            loading="eager"
           />
-          <div className="panel absolute -bottom-10 left-4 right-4 p-4 backdrop-blur-xl">
+          <div className="panel mt-4 p-4 backdrop-blur-xl">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Round Robin · quantum 3</span>
               <span className="font-mono">avg wait {demo.metrics.avgWaiting.toFixed(2)}ms</span>
