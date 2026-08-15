@@ -410,5 +410,5 @@ export const resources: Resource[] = [
 
 export const activityHeatmap = Array.from({ length: 98 }, (_, i) => ({
   day: i,
-  intensity: [0, 0, 1, 1, 2, 2, 3, 4, 1, 0, 2, 3, 4, 2][i % 14],
+  intensity: ([0, 0, 1, 1, 2, 2, 3, 4, 1, 0, 2, 3, 4, 2][i % 14] ?? 0) as number,
 }));
