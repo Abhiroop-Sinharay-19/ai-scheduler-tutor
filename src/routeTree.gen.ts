@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteImport } from './routes/_shell'
 import { Route as ShellDashboardRouteImport } from './routes/_shell.dashboard'
 import { Route as ShellSimulatorRouteImport } from './routes/_shell.simulator'
+import { Route as ShellTutorRouteImport } from './routes/_shell.tutor'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,16 +34,23 @@ const ShellSimulatorRoute = ShellSimulatorRouteImport.update({
   path: '/simulator',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellTutorRoute = ShellTutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => ShellRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof ShellDashboardRoute
   '/simulator': typeof ShellSimulatorRoute
+  '/tutor': typeof ShellTutorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof ShellDashboardRoute
   '/simulator': typeof ShellSimulatorRoute
+  '/tutor': typeof ShellTutorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -50,13 +58,20 @@ export interface FileRoutesById {
   '/_shell': typeof ShellRouteWithChildren
   '/_shell/dashboard': typeof ShellDashboardRoute
   '/_shell/simulator': typeof ShellSimulatorRoute
+  '/_shell/tutor': typeof ShellTutorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/simulator'
+  fullPaths: '/' | '/dashboard' | '/simulator' | '/tutor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/simulator'
-  id: '__root__' | '/' | '/_shell' | '/_shell/dashboard' | '/_shell/simulator'
+  to: '/' | '/dashboard' | '/simulator' | '/tutor'
+  id:
+    | '__root__'
+    | '/'
+    | '/_shell'
+    | '/_shell/dashboard'
+    | '/_shell/simulator'
+    | '/_shell/tutor'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,17 +109,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellSimulatorRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/tutor': {
+      id: '/_shell/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof ShellTutorRouteImport
+      parentRoute: typeof ShellRoute
+    }
   }
 }
 
 interface ShellRouteChildren {
   ShellDashboardRoute: typeof ShellDashboardRoute
   ShellSimulatorRoute: typeof ShellSimulatorRoute
+  ShellTutorRoute: typeof ShellTutorRoute
 }
 
 const ShellRouteChildren: ShellRouteChildren = {
   ShellDashboardRoute: ShellDashboardRoute,
   ShellSimulatorRoute: ShellSimulatorRoute,
+  ShellTutorRoute: ShellTutorRoute,
 }
 
 const ShellRouteWithChildren = ShellRoute._addFileChildren(ShellRouteChildren)
