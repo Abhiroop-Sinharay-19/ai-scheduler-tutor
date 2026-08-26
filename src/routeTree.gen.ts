@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteImport } from './routes/_shell'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ShellDashboardRouteImport } from './routes/_shell.dashboard'
 import { Route as ShellProfileRouteImport } from './routes/_shell.profile'
 import { Route as ShellProgressRouteImport } from './routes/_shell.progress'
@@ -40,6 +41,11 @@ const LoginRoute = LoginRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShellDashboardRoute = ShellDashboardRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/verify': typeof VerifyRoute
   '/dashboard': typeof ShellDashboardRoute
   '/profile': typeof ShellProfileRoute
   '/progress': typeof ShellProgressRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/verify': typeof VerifyRoute
   '/dashboard': typeof ShellDashboardRoute
   '/profile': typeof ShellProfileRoute
   '/progress': typeof ShellProgressRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/_shell': typeof ShellRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/verify': typeof VerifyRoute
   '/_shell/dashboard': typeof ShellDashboardRoute
   '/_shell/profile': typeof ShellProfileRoute
   '/_shell/progress': typeof ShellProgressRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/verify'
     | '/dashboard'
     | '/profile'
     | '/progress'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/verify'
     | '/dashboard'
     | '/profile'
     | '/progress'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/_shell'
     | '/login'
     | '/signup'
+    | '/verify'
     | '/_shell/dashboard'
     | '/_shell/profile'
     | '/_shell/progress'
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   ShellRoute: typeof ShellRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  VerifyRoute: typeof VerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_shell/dashboard': {
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShellRoute: ShellRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  VerifyRoute: VerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

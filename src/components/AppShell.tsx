@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   BookOpen,
@@ -11,10 +11,12 @@ import {
   Settings,
   Sparkles,
   X,
+  LogOut,
 } from "lucide-react";
 import { student } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { GlobalAssistant } from "./GlobalAssistant";
+import { signOut } from "@/lib/supabase";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -60,6 +62,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function SidebarFooter() {
+  const navigate = useNavigate();
+  const logout = async () => {
+    signOut();
+    await navigate({ to: "/login" });
+  };
   return (
     <div className="space-y-2">
       <Link
@@ -83,6 +90,13 @@ function SidebarFooter() {
       >
         <Settings className="size-4" /> Settings
       </Link>
+      <button
+        type="button"
+        onClick={() => void logout()}
+        className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <LogOut className="size-4" /> Sign out
+      </button>
     </div>
   );
 }

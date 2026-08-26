@@ -81,7 +81,7 @@ function Landing() {
         <nav className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm"><Link to="/algorithms">Algorithms</Link></Button>
           <Button asChild variant="ghost" size="sm"><Link to="/login">Sign in</Link></Button>
-          <Button asChild size="sm"><Link to="/dashboard">Open app</Link></Button>
+          <Button asChild size="sm"><Link to="/login">Open app</Link></Button>
         </nav>
       </header>
 
@@ -98,8 +98,8 @@ function Landing() {
             stepping, and an AI tutor that explains every dispatch decision.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="gap-2"><Link to="/simulator"><Play className="size-4" /> Try the simulator</Link></Button>
-            <Button asChild size="lg" variant="outline" className="gap-2"><Link to="/tutor"><BrainCircuit className="size-4" /> Ask the AI tutor</Link></Button>
+            <Button asChild size="lg" className="gap-2"><Link to="/signup"><Play className="size-4" /> Try the simulator</Link></Button>
+            <Button asChild size="lg" variant="outline" className="gap-2"><Link to="/signup"><BrainCircuit className="size-4" /> Ask the AI tutor</Link></Button>
           </div>
           <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6">
             {[
@@ -181,7 +181,7 @@ function Landing() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg"><Link to="/signup">Create free account</Link></Button>
-          <Button asChild size="lg" variant="outline"><Link to="/dashboard">Explore the dashboard</Link></Button>
+          <Button asChild size="lg" variant="outline"><Link to="/login">Explore the dashboard</Link></Button>
         </div>
       </section>
 

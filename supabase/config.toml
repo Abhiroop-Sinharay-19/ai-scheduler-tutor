@@ -1,0 +1,4 @@
+project_id = "ai-scheduler-tutor"
+
+[functions.api]
+verify_jwt = false
