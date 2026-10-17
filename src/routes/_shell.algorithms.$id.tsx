@@ -23,7 +23,12 @@ export const Route = createFileRoute("/_shell/algorithms/$id")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Algorithm unavailable — Process Scheduling Tutor" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "Algorithm unavailable — Process Scheduling Tutor" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const { algo } = loaderData;
     const description = `${algo.name}: ${algo.tagline} Learn how it works, its trade-offs and exam questions.`;
@@ -44,9 +49,13 @@ function ConceptVisual({ id }: { id: AlgorithmId }) {
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="rounded-xl border border-primary/40 bg-primary/15 px-4 py-2 text-sm font-semibold">CPU</span>
+          <span className="rounded-xl border border-primary/40 bg-primary/15 px-4 py-2 text-sm font-semibold">
+            CPU
+          </span>
           <span className="text-muted-foreground">↓</span>
-          <span className="rounded-xl border border-border bg-surface/60 px-4 py-2 text-sm">Time Quantum = 2 ms</span>
+          <span className="rounded-xl border border-border bg-surface/60 px-4 py-2 text-sm">
+            Time Quantum = 2 ms
+          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {["P1", "P2", "P3", "P1", "P2"].map((p, i) => (
@@ -106,11 +115,15 @@ function AlgorithmDetail() {
     <div className="space-y-8">
       <div className="animate-fade-up">
         <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-          <Link to="/algorithms"><ArrowLeft className="size-4" /> All algorithms</Link>
+          <Link to="/algorithms">
+            <ArrowLeft className="size-4" /> All algorithms
+          </Link>
         </Button>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{algo.name}</h1>
-          <Badge variant="outline" className="border-primary/40 text-primary">{algo.type}</Badge>
+          <Badge variant="outline" className="border-primary/40 text-primary">
+            {algo.type}
+          </Badge>
           <Badge variant="secondary">{algo.difficulty}</Badge>
           <span className="font-mono text-xs text-muted-foreground">{algo.complexity}</span>
         </div>
@@ -132,21 +145,31 @@ function AlgorithmDetail() {
           </ol>
           <div className="mt-8">
             <h3 className="text-sm font-medium">Conceptual visualisation</h3>
-            <div className="mt-4"><ConceptVisual id={algo.id} /></div>
+            <div className="mt-4">
+              <ConceptVisual id={algo.id} />
+            </div>
           </div>
         </section>
 
         <section className="panel space-y-5 p-6">
           <div>
-            <h3 className="flex items-center gap-2 text-sm font-medium text-success"><CheckCircle2 className="size-4" /> Advantages</h3>
+            <h3 className="flex items-center gap-2 text-sm font-medium text-success">
+              <CheckCircle2 className="size-4" /> Advantages
+            </h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {algo.advantages.map((x) => <li key={x}>• {x}</li>)}
+              {algo.advantages.map((x) => (
+                <li key={x}>• {x}</li>
+              ))}
             </ul>
           </div>
           <div>
-            <h3 className="flex items-center gap-2 text-sm font-medium text-destructive"><XCircle className="size-4" /> Disadvantages</h3>
+            <h3 className="flex items-center gap-2 text-sm font-medium text-destructive">
+              <XCircle className="size-4" /> Disadvantages
+            </h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              {algo.disadvantages.map((x) => <li key={x}>• {x}</li>)}
+              {algo.disadvantages.map((x) => (
+                <li key={x}>• {x}</li>
+              ))}
             </ul>
           </div>
         </section>
@@ -156,9 +179,13 @@ function AlgorithmDetail() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Interactive simulation</h2>
-            <p className="text-sm text-muted-foreground">P1(0,6) · P2(1,3) · P3(3,4) scheduled with {algo.name}.</p>
+            <p className="text-sm text-muted-foreground">
+              P1(0,6) · P2(1,3) · P3(3,4) scheduled with {algo.name}.
+            </p>
           </div>
-          <Button asChild variant="outline" size="sm"><Link to="/simulator">Open full simulator</Link></Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/simulator">Open full simulator</Link>
+          </Button>
         </div>
         <div className="mt-5">
           {result ? (
@@ -175,7 +202,9 @@ function AlgorithmDetail() {
               { k: "CPU utilisation", v: `${result.metrics.cpuUtilization}%` },
             ].map((m) => (
               <div key={m.k} className="rounded-xl border border-border bg-surface/60 px-4 py-3">
-                <span className="block text-[11px] uppercase tracking-wider text-muted-foreground">{m.k}</span>
+                <span className="block text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {m.k}
+                </span>
                 <span className="mt-1 block font-mono text-sm">{m.v}</span>
               </div>
             ))}
@@ -188,10 +217,14 @@ function AlgorithmDetail() {
           <h2 className="text-lg font-semibold tracking-tight">Common exam questions</h2>
           <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
             {algo.examQuestions.map((q) => (
-              <li key={q} className="rounded-xl border border-border bg-surface/60 px-4 py-3">{q}</li>
+              <li key={q} className="rounded-xl border border-border bg-surface/60 px-4 py-3">
+                {q}
+              </li>
             ))}
           </ul>
-          <Button asChild className="mt-5" variant="outline"><Link to="/quizzes">Practice problems</Link></Button>
+          <Button asChild className="mt-5" variant="outline">
+            <Link to="/quizzes">Practice problems</Link>
+          </Button>
         </section>
 
         <section className="panel flex h-[520px] flex-col p-6">
@@ -202,7 +235,11 @@ function AlgorithmDetail() {
           <div className="mt-4 min-h-0 flex-1">
             <AIChat
               context={{ page: "/algorithms", algorithm: algo.id }}
-              quickPrompts={[`Explain ${algo.name} step by step`, `Give me a ${algo.name} problem`, "Simplify that"]}
+              quickPrompts={[
+                `Explain ${algo.name} step by step`,
+                `Give me a ${algo.name} problem`,
+                "Simplify that",
+              ]}
             />
           </div>
         </section>

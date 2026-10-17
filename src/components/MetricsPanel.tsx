@@ -1,4 +1,13 @@
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Activity, Clock, Cpu, Timer } from "lucide-react";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { processColor } from "./GanttChart";
@@ -27,9 +36,15 @@ export function MetricsPanel({ result }: { result: ScheduleResult }) {
         {cards.map((c, i) => {
           const Icon = metricIcon[i] ?? Clock;
           return (
-            <div key={c.label} className="panel hover-lift p-5" style={{ animation: `fade-up 0.5s ${i * 0.07}s both` }}>
+            <div
+              key={c.label}
+              className="panel hover-lift p-5"
+              style={{ animation: `fade-up 0.5s ${i * 0.07}s both` }}
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground">{c.label}</span>
+                <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {c.label}
+                </span>
                 <Icon className="size-4 text-primary" />
               </div>
               <AnimatedCounter
@@ -51,8 +66,19 @@ export function MetricsPanel({ result }: { result: ScheduleResult }) {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={result.perProcess} margin={{ left: -18, right: 6, top: 4 }}>
                   <CartesianGrid stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                  <XAxis
+                    dataKey="name"
+                    stroke="var(--muted-foreground)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="var(--muted-foreground)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
                   <Tooltip
                     contentStyle={{
                       background: "var(--popover)",
@@ -78,8 +104,18 @@ export function MetricsPanel({ result }: { result: ScheduleResult }) {
         <table className="w-full min-w-[560px] text-sm">
           <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
-              {["Process", "Arrival", "Burst", "Completion", "Turnaround", "Waiting", "Response"].map((h) => (
-                <th key={h} className="px-4 py-3">{h}</th>
+              {[
+                "Process",
+                "Arrival",
+                "Burst",
+                "Completion",
+                "Turnaround",
+                "Waiting",
+                "Response",
+              ].map((h) => (
+                <th key={h} className="px-4 py-3">
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>

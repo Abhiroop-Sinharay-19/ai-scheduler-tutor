@@ -86,9 +86,15 @@ export function GanttChart({ gantt, names, runKey, activeTime = null, onSelect }
                     {slice.idle ? "idle" : slice.name}
                   </span>
                   <span className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full rounded-lg border border-border bg-popover px-3 py-2 text-left text-xs opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                    <span className="block font-semibold">{slice.idle ? "CPU idle" : `Process ${slice.name}`}</span>
-                    <span className="block text-muted-foreground">Start {slice.start} · End {slice.end}</span>
-                    <span className="block text-muted-foreground">Execution {slice.end - slice.start} ms</span>
+                    <span className="block font-semibold">
+                      {slice.idle ? "CPU idle" : `Process ${slice.name}`}
+                    </span>
+                    <span className="block text-muted-foreground">
+                      Start {slice.start} · End {slice.end}
+                    </span>
+                    <span className="block text-muted-foreground">
+                      Execution {slice.end - slice.start} ms
+                    </span>
                   </span>
                 </button>
               );
@@ -112,13 +118,18 @@ export function GanttChart({ gantt, names, runKey, activeTime = null, onSelect }
       <div className="rounded-xl border border-border bg-surface/60 p-4 text-sm text-muted-foreground animate-fade-in">
         {selected ? (
           <>
-            <span className="font-semibold text-foreground">Why {selected.idle ? "idle" : selected.name} here? </span>
+            <span className="font-semibold text-foreground">
+              Why {selected.idle ? "idle" : selected.name} here?{" "}
+            </span>
             {selected.reason}
           </>
         ) : hover ? (
           <>
-            <span className="font-semibold text-foreground">{hover.idle ? "CPU idle" : hover.name}: </span>
-            {hover.start} → {hover.end} ms ({hover.end - hover.start} ms of CPU). Click the block for the scheduling reason.
+            <span className="font-semibold text-foreground">
+              {hover.idle ? "CPU idle" : hover.name}:{" "}
+            </span>
+            {hover.start} → {hover.end} ms ({hover.end - hover.start} ms of CPU). Click the block
+            for the scheduling reason.
           </>
         ) : (
           "Hover a block for timings, click it to get the AI explanation of why that process was chosen."

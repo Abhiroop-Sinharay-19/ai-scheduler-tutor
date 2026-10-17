@@ -1,996 +1,168 @@
-# AI Scheduler Tutor
+# Process Scheduling Tutor
 
-Build a Modern LLM-Powered Process Scheduling Tutor
+A React application for learning CPU process scheduling. It combines a deterministic scheduler and Gantt chart simulator with quizzes, per-user progress, course resources, and an AI tutor grounded in course documents.
 
-Build a polished, modern, interactive educational web application called "Process Scheduling Tutor".
+## Implemented features
 
-The application is an AI-powered Operating Systems tutor focused specifically on CPU Process Scheduling. It should combine an LLM tutor, scheduling algorithm simulator, RAG-based explanations, interactive Gantt charts, quizzes, progress tracking, and personalized learning.
+- FCFS, SJF, SRTF, Round Robin, and Priority scheduling, including Gantt charts, per-process metrics, and step-by-step timelines.
+- Supabase email/password authentication, quiz attempts, simulations, and user-scoped progress.
+- An AI tutor served by a Supabase Edge Function. The function sends requests to OpenRouter and supplies retrieved course passages and deterministic scheduling results as context.
+- An optional document ingestion script that extracts and chunks course notes, generates 384-dimensional `Supabase/gte-small` embeddings, and writes the vectors and source metadata to Supabase pgvector.
 
-The design should feel like a modern AI education platform, not a traditional college website.
+Fine-tuning is not implemented as a completed training run. The `training/` directory describes an experiment; the application defaults to its configured OpenRouter model. Do not configure the optional fine-tuned endpoint unless a model has actually been trained, evaluated, and hosted.
 
-1. Overall Design Direction
+## Architecture
 
-Create a visually impressive interface with:
+| Area | Implementation |
+| --- | --- |
+| Frontend | React 19, Vite 8, TanStack Start and TanStack Router, Tailwind CSS 4 |
+| Hosting | Vercel, using the existing Nitro integration for TanStack Start SSR and routes |
+| Authentication and database | Supabase Auth and PostgreSQL; migrations and RLS policies are in `supabase/migrations/` |
+| API | `supabase/functions/api/`; it verifies Supabase user tokens and uses server-side credentials for protected operations |
+| AI | OpenRouter chat completions called only from the Edge Function |
+| Retrieval | Local document ingestion, `gte-small` embeddings, Supabase pgvector, and a restricted matching RPC |
+| Scheduling | Deterministic calculations in `src/lib/scheduling.ts`; tutor requests also receive scheduling context from the API |
 
-Modern dark-first design
+Protected user records are scoped by RLS. Quiz answers and knowledge chunks are not readable by browser roles. The browser receives only the Supabase URL and public anon/publishable key; the service-role key and OpenRouter key belong on trusted servers only.
 
-Futuristic but professional aesthetic
+## Requirements
 
-Smooth animations and micro-interactions
+- Node.js 22.9 or newer and npm (the test and ingestion scripts use Node 22 features).
+- A Supabase project for authentication, database, and Edge Functions.
+- An OpenRouter API key for live AI tutor responses.
+- The Supabase CLI for database and Edge Function deployment.
+- A Vercel account for hosted frontend deployment.
 
-Glassmorphism used selectively
+## Local development
 
-Subtle gradients
+Install dependencies from the committed npm lockfile and create a local environment file:
 
-Soft glowing accents
+```powershell
+npm ci
+Copy-Item .env.example .env.local
+```
 
-Interactive charts and visualizations
+Set these public Supabase values in `.env.local`:
 
-Rounded cards
+```dotenv
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key
+```
 
-Clean typography
+Then run the app:
 
-Plenty of whitespace
-
-Strong visual hierarchy
-
-Responsive design for desktop, tablet, and mobile
-
-The application should feel similar in quality and polish to modern products such as AI developer tools, Linear, Vercel, Notion, and modern learning platforms.
-
-Avoid making it look like a generic admin dashboard.
-
-The primary goal is to make learning CPU scheduling visual, interactive, and engaging.
-
-2. Color System
-
-Use a dark background as the primary theme.
-
-Suggested palette:
-
-Background: very dark navy / charcoal
-
-Cards: slightly lighter dark surfaces
-
-Primary accent: electric blue / cyan
-
-Secondary accent: purple
-
-Success: green
-
-Warning: amber
-
-Error: red
-
-Main text: near-white
-
-Secondary text: muted gray
-
-Use gradients sparingly.
-
-Use subtle blue/purple glows behind important sections.
-
-Do not overuse neon effects.
-
-3. Application Structure
-
-Create the following main sections:
-
-Navigation
-
-A persistent sidebar on desktop and collapsible navigation on mobile.
-
-Navigation items:
-
-Dashboard
-
-AI Tutor
-
-Simulator
-
-Algorithms
-
-Quizzes
-
-Progress
-
-Resources
-
-At the bottom:
-
-Student profile
-
-Learning level
-
-Settings
-
-The sidebar should have elegant icons and active-state animations.
-
-4. Dashboard
-
-Create an engaging student dashboard.
-
-Header:
-
-"Good morning, [Student Name]"
-
-Subtitle:
-
-"Continue learning Process Scheduling."
-
-Display a learning progress indicator.
-
-Example:
-
-Overall Progress
-72%
-
-with a circular or radial progress visualization.
-
-Continue Learning Card
-
-Large featured card:
-
-"CPU Scheduling Fundamentals"
-
-Show:
-
-Progress: 68%
-
-Current topic: Round Robin
-
-Estimated time remaining
-
-Continue Learning button
-
-Use a visually interesting abstract CPU/process animation in the background.
-
-Learning Statistics
-
-Create four compact cards:
-
-Topics Completed
-
-Problems Solved
-
-Quiz Accuracy
-
-Learning Streak
-
-Use animated counters.
-
-Example:
-
-12 Topics
-47 Problems
-86% Accuracy
-7 Day Streak
-
-Algorithm Mastery
-
-Create a horizontal/vertical visualization showing mastery for:
-
-FCFS
-
-SJF
-
-SRTF
-
-Round Robin
-
-Priority Scheduling
-
-Example:
-
-FCFS ██████████ 92%
-SJF ████████░░ 78%
-SRTF ██████░░░░ 64%
-Round Robin███████░░░ 72%
-Priority █████░░░░░ 51%
-
-Use animated progress bars.
-
-Recent Activity
-
-Show recent learning activity:
-
-Completed FCFS quiz
-
-Solved Round Robin problem
-
-Asked AI about SRTF
-
-Completed Scheduling Fundamentals
-
-Use timeline-style UI.
-
-5. AI Tutor
-
-This is the central feature of the application.
-
-Create a sophisticated AI tutoring interface.
-
-Layout:
-
-Left side:
-Conversation history / topics
-
-Center:
-AI conversation
-
-Right side:
-Context panel
-
-The AI chat should feel similar to a modern AI assistant.
-
-Example:
-
-Student:
-
-"Why does SRTF preempt P1 here?"
-
-AI:
-
-"SRTF always selects the process with the shortest remaining burst time..."
-
-But the AI should also be able to reference the active scheduling problem.
-
-AI Input
-
-Large input box at the bottom.
-
-Placeholder:
-
-"Ask anything about process scheduling..."
-
-Include:
-
-Send button
-
-Attach problem
-
-Generate example
-
-Explain differently
-
-Simplify explanation
-
-Add quick prompts:
-
-"Explain FCFS"
-"Give me a Round Robin problem"
-"Why does SJF minimize waiting time?"
-"Test me on SRTF"
-
-6. Interactive Scheduling Simulator
-
-This should be one of the most visually impressive parts of the application.
-
-Create a dedicated simulator page.
-
-Top section:
-
-Process Scheduling Simulator
-
-Allow the student to select:
-
-Algorithm:
-
-Dropdown:
-
-FCFS
-
-SJF
-
-SRTF
-
-Round Robin
-
-Priority Scheduling
-
-Process Input Table
-
-Create an editable table:
-
-ProcessArrival TimeBurst TimePriorityP1082P2141P3223
-
-Allow:
-
-Add process
-
-Delete process
-
-Edit values
-
-For Round Robin, dynamically show:
-
-"Time Quantum"
-
-For Priority Scheduling, show:
-
-"Priority"
-
-7. Animated Gantt Chart
-
-After pressing:
-
-"Run Simulation"
-
-display a large interactive Gantt chart.
-
-Example:
-
-0 2 6 10
-| P1 | P2 | P3 |
-
-Make each process a visually distinct block.
-
-Animate the Gantt chart being generated from left to right.
-
-Hovering over a process should show:
-
-Process:
-P2
-
-Start:
-2
-
-End:
-6
-
-Execution:
-4 ms
-
-Allow the user to click a Gantt block.
-
-When clicked, show an explanation:
-
-"P2 executes here because it has the shortest remaining burst time."
-
-8. Scheduling Metrics
-
-Below the Gantt chart show:
-
-Performance Metrics
-
-Cards:
-
-Average Waiting Time
-Average Turnaround Time
-Average Response Time
-CPU Utilization
-
-Use animated number transitions.
-
-Also create charts for:
-
-Waiting time per process
-
-Turnaround time per process
-
-Response time per process
-
-Use clean interactive charts.
-
-9. Step-by-Step Simulation Mode
-
-Add a toggle:
-
-"Step-by-Step Mode"
-
-When enabled, the simulator should allow:
-
-Previous Step
-Next Step
-
-Show the state of the CPU at every time unit.
-
-Example:
-
-TIME = 4 ms
-
-CPU:
-
-P2
-
-Ready Queue:
-
-P1 → P3 → P4
-
-The interface should visually highlight:
-
-Currently executing process
-
-Ready queue
-
-Completed processes
-
-Newly arrived processes
-
-This should feel like watching a CPU scheduler operate in real time.
-
-10. Algorithms Page
-
-Create an algorithms overview page.
-
-Cards for:
-
-FCFS
-SJF
-SRTF
-Round Robin
-Priority Scheduling
-
-Each card should contain:
-
-Algorithm name
-
-Short description
-
-Type: Preemptive / Non-preemptive
-
-Average complexity
-
-Difficulty
-
-Student mastery percentage
-
-Example:
-
-Round Robin
-
-"Preemptive scheduling algorithm that assigns each process a fixed time quantum."
-
-Difficulty:
-Intermediate
-
-Mastery:
-72%
-
-Button:
-
-"Learn"
-
-11. Algorithm Detail Page
-
-Clicking an algorithm opens a detailed learning page.
-
-Example:
-
-Round Robin
-
-Sections:
-
-Overview
-
-How It Works
-
-Example
-
-Interactive Simulation
-
-Advantages
-
-Disadvantages
-
-Common Exam Questions
-
-Practice Problems
-
-AI Explanation
-
-Show an animated conceptual visualization.
-
-For Round Robin, visually represent:
-
-CPU
-
-↓
-
-Time Quantum
-
-↓
-
-P1 → P2 → P3 → P1 → P2
-
-Use animated arrows and process cards.
-
-12. Quiz Section
-
-Create a gamified quiz interface.
-
-Quiz categories:
-
-FCFS
-
-SJF
-
-SRTF
-
-Round Robin
-
-Priority Scheduling
-
-Mixed Scheduling
-
-Show:
-
-Question 3 / 10
-
-Progress bar.
-
-Question example:
-
-"Which scheduling algorithm can cause starvation?"
-
-Provide four answer cards.
-
-When the user selects an answer:
-
-Correct:
-
-Green animation + explanation.
-
-Incorrect:
-
-Red animation + explanation.
-
-Then allow:
-
-"Ask AI why"
-
-This should open the AI Tutor with the question context.
-
-13. Quiz Results
-
-After completing a quiz show:
-
-Quiz Complete!
-
-Score:
-
-86%
-
-Then display:
-
-Correct Answers
-8 / 10
-
-Time Taken
-4m 32s
-
-Concept Mastery
-Strong
-
-Weak Areas:
-
-SRTF preemption
-
-Waiting time calculations
-
-Add buttons:
-
-Review Mistakes
-Ask AI
-Try Again
-
-14. Progress Page
-
-Create a visual learning analytics dashboard.
-
-Show:
-
-Overall mastery
-
-Algorithm mastery
-
-Quiz performance
-
-Problems solved
-
-Learning streak
-
-Time spent learning
-
-Use:
-
-Line charts
-
-Radial charts
-
-Progress bars
-
-Timeline
-
-Heatmap-style activity calendar
-
-Create a section:
-
-"Your Weak Areas"
-
-Example:
-
-SRTF Preemption
-54%
-
-Priority Scheduling
-61%
-
-Round Robin Time Quantum
-68%
-
-Add:
-
-"Practice These"
-
-button.
-
-15. Resources Page
-
-Create a resource library.
-
-Categories:
-
-OS Notes
-
-Process Scheduling
-
-Algorithms
-
-Examples
-
-Exam Preparation
-
-Each resource should appear as a modern card.
-
-Include search and filtering.
-
-16. AI Personalization
-
-The interface should visually communicate that the tutor adapts to the student.
-
-Create a card:
-
-Your AI Learning Profile
-
-Current Level:
-Intermediate
-
-Strongest:
-FCFS
-
-Needs Practice:
-SRTF
-
-Recommended Next Topic:
-Round Robin
-
-Learning Style:
-Step-by-step explanations
-
-Button:
-
-"Generate Learning Plan"
-
-17. Landing Page
-
-Create a polished landing page before login.
-
-Hero:
-
-"Master CPU Scheduling
-with an AI Tutor."
-
-Subtitle:
-
-"Learn, simulate, practice, and understand process scheduling through an intelligent tutor that adapts to you."
-
-Primary CTA:
-
-"Start Learning"
-
-Secondary CTA:
-
-"Try Simulator"
-
-Hero Visual
-
-Do NOT use a generic stock illustration.
-
-Create an interactive visualization representing:
-
-Student Question
-
-↓
-
-AI Tutor
-
-↓
-
-Scheduling Engine
-
-↓
-
-Gantt Chart
-
-↓
-
-Personalized Explanation
-
-Use animated nodes, lines, process blocks, and subtle particle effects.
-
-The visualization should immediately communicate the product's concept.
-
-18. Login / Signup
-
-Create clean authentication screens.
-
-Login:
-
-Email
-Password
-
-Continue with Google
-
-Sign In
-
-Signup:
-
-Name
-Email
-Password
-Confirm Password
-
-Then ask:
-
-"What is your current OS level?"
-
-Beginner
-Intermediate
-Advanced
-
-This information will be used for personalization.
-
-19. Global AI Assistant
-
-Add a small floating AI button throughout the application.
-
-When clicked, open a compact AI assistant panel.
-
-Example:
-
-"Need help?"
-
-Suggested actions:
-
-Explain this
-Solve this
-Give me a hint
-Give me another example
-
-The AI should understand the current page context.
-
-For example, if the student is looking at an SRTF simulation, the assistant should automatically know that the question relates to SRTF.
-
-20. Animations
-
-Use animations thoughtfully.
-
-Include:
-
-Page transitions
-
-Card hover effects
-
-Animated progress bars
-
-Gantt chart generation animation
-
-Process movement animations
-
-Number counting animations
-
-AI typing animation
-
-Subtle background particles
-
-Smooth sidebar transitions
-
-Quiz answer animations
-
-Avoid excessive animations that make the interface distracting.
-
-21. Responsive Design
-
-The application must work extremely well on:
-
-Desktop
-
-Laptop
-
-Tablet
-
-Mobile
-
-On mobile:
-
-Sidebar becomes bottom navigation or hamburger menu
-
-Tables become horizontally scrollable
-
-Gantt charts remain readable
-
-AI tutor becomes full-screen
-
-Dashboard cards stack vertically
-
-22. Component Architecture
-
-Use reusable React components.
-
-Suggested structure:
-
-components/
-
-Navbar
-
-Sidebar
-
-DashboardCard
-
-ProgressCard
-
-AlgorithmCard
-
-ProcessTable
-
-GanttChart
-
-MetricsCard
-
-MetricsChart
-
-AIChat
-
-AIMessage
-
-QuizCard
-
-QuizProgress
-
-QuizResult
-
-ActivityTimeline
-
-LearningProfile
-
-SimulationControls
-
-pages/
-
-Landing
-
-Login
-
-Signup
-
-Dashboard
-
-Tutor
-
-Simulator
-
-Algorithms
-
-AlgorithmDetail
-
-Quiz
-
-QuizResult
-
-Progress
-
-Resources
-
-Profile
-
-23. Important Functional Behavior
-
-For now, create realistic mock data and frontend interactions.
-
-The frontend should be designed so that it can later connect to a FastAPI backend.
-
-Use API service functions such as:
-
-/api/chat
-
-/api/schedule
-
-/api/quiz
-
-/api/quiz/check
-
-/api/progress
-
-Do NOT tightly couple the UI to mock data.
-
-Create a clean API service layer so the backend can replace the mock data later.
-
-24. Design Quality Requirements
-
-The final result should feel like a real SaaS product.
-
-Prioritize:
-
-Visual hierarchy
-
-Usability
-
-Smooth interactions
-
-Educational clarity
-
-Data visualization
-
-AI-first experience
-
-Responsive design
-
-Avoid:
-
-Generic Bootstrap dashboards
-
-Excessive gradients
-
-Excessive glassmorphism
-
-Cluttered screens
-
-Huge amounts of text
-
-Stock images
-
-Outdated UI patterns
-
-The interface should feel premium, futuristic, intelligent, and educational.
-
-The most visually important screens should be:
-
-Landing Page
-
-Dashboard
-
-AI Tutor
-
-Scheduling Simulator
-
-Animated Gantt Chart
-
-Quiz
-
-Progress Analytics
-
-Use modern icons, subtle motion, and polished empty/loading/error states.
-
-Build the frontend with React + Vite + TailwindCSS and use a component architecture that will make it easy to connect to a FastAPI backend later.
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/94a454e2-f3c8-47e3-91c5-56053896a754).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```powershell
 npm run dev
 ```
+
+Vite prints the local URL (normally `http://localhost:5173`). Add it to the Supabase Auth URL allow list. Never put a service-role key or OpenRouter key in a `VITE_` variable.
+
+## Validation commands
+
+```powershell
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run preview
+```
+
+`npm run preview` serves the production build locally. Check the landing page and a direct nested URL before deploying. `npm run build` uses TanStack Start and Nitro; Vercel handles server rendering and route fallback, so this is not a static-only SPA deployment.
+
+## Environment variables and secrets
+
+### Vercel frontend build
+
+Set these for Preview and Production deployments:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | Yes | Supabase project URL; public |
+| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon/publishable client key; public |
+| `VITE_API_BASE_URL` | No | Override the Supabase Edge Function API base only when using a separately hosted compatible API |
+
+`VITE_API_BASE_URL` is sent to the browser and must point to a public API. It is not a place for credentials.
+
+### Supabase Edge Function secrets
+
+Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions. Set the AI provider secret through the Supabase CLI or project dashboard:
+
+| Secret | Required | Purpose |
+| --- | --- | --- |
+| `OPENROUTER_API_KEY` | Yes for live AI responses | OpenRouter credential; server-side only |
+| `OPENROUTER_MODEL` | No | Model name; defaults to `qwen/qwen3-235b-a22b-2507` |
+
+The function also has an opt-in OpenAI-compatible endpoint configuration (`FINETUNED_QWEN_BASE_URL`, `FINETUNED_QWEN_MODEL`, and `FINETUNED_QWEN_API_KEY`). Leave all three unset unless a trained model is hosted and ready; partial configuration causes the tutor to report a configuration error.
+
+### Local document ingestion
+
+For `npm run ingest:kb`, keep `SUPABASE_SERVICE_ROLE_KEY` in the ignored `.env.local` file. `SUPABASE_URL` is accepted by the script; otherwise it uses `VITE_SUPABASE_URL`. Never commit `.env.local`, `.env`, or service credentials.
+
+## Deploy the frontend to Vercel
+
+1. Push the intended GitHub branch and import the repository in Vercel. Set the project root to the repository root and select the TanStack Start framework preset if Vercel does not detect it automatically.
+2. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for Preview and Production. Do not add server secrets to Vercel's frontend variables.
+3. Deploy with Vercel's detected build settings (`npm run build`). Nitro produces Vercel-compatible server output and handles SSR and nested routes.
+4. In Supabase **Authentication → URL Configuration**, set the production site URL and allow the deployed frontend URL. Add the local development URL while developing.
+5. Open the deployed site and check the landing page, sign-up and email verification, sign-in, a simulator route, and an authenticated data-backed page.
+
+Vercel's TanStack Start/Nitro detection and setup are described in the [Vercel deployment guide](https://vercel.com/kb/guide/deploy-a-tanstack-start-app-to-vercel) and [TanStack hosting guide](https://tanstack.com/start/latest/docs/framework/react/guide/hosting). The project uses server rendering, so GitHub Pages is not an appropriate host for this architecture.
+
+## Deploy Supabase migrations and the API
+
+Install the [Supabase CLI](https://supabase.com/docs/guides/cli), then run from the repository root:
+
+```powershell
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+supabase secrets set OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY
+supabase secrets set OPENROUTER_MODEL=qwen/qwen3-235b-a22b-2507
+supabase functions deploy api
+```
+
+The Edge Function validates the user's Supabase access token itself (`verify_jwt = false` in `supabase/config.toml`), then uses the server-side service role for database work. Keep RLS enabled; do not expose or put the service-role key in the browser. Configure the Supabase Auth site URL and allowed redirect URLs for local development and the production domain.
+
+For email confirmation, leave Supabase email confirmation enabled and set the **Confirm signup** email template to include `{{ .Token }}`. The app's `/verify` page accepts that one-time code and calls Supabase Auth to verify it. Configure SMTP in Supabase if the default email service is not suitable for production.
+
+## Ingest course notes and verify RAG
+
+Place supported `.ppt`, `.pptx`, `.pdf`, `.docx`, `.txt`, or `.md` course files in `notes for process/`. The dry run extracts and chunks text without credentials or database writes:
+
+```powershell
+npm run ingest:kb:check
+```
+
+After applying the RAG migration and adding `SUPABASE_SERVICE_ROLE_KEY` to the ignored local environment file, index the documents:
+
+```powershell
+npm run ingest:kb
+```
+
+Ingestion extracts text, chunks it, generates normalized 384-dimensional embeddings locally, and replaces changed document rows through the restricted `replace_knowledge_document` RPC. The Edge Function embeds questions using Supabase's `gte-small` model and queries `match_knowledge_chunks` before calling the LLM. Empty retrieval returns a clarification response rather than fabricated course references.
+
+The dry run verifies extraction and chunking only. A successful ingestion and live retrieval smoke check against your configured Supabase project are required before claiming the production RAG corpus works. The AI response path also requires a valid OpenRouter secret and provider quota.
+
+## Repository map
+
+```text
+src/routes/                 File-based application routes
+src/components/             Shared UI and simulator components
+src/lib/api.ts              Frontend API client and query definitions
+src/lib/scheduling.ts       Deterministic scheduling calculations
+src/lib/supabase.ts         Browser Supabase Auth client
+supabase/functions/api/     Edge Function API and scheduling/tutor behavior
+supabase/migrations/        PostgreSQL schema, RLS, and vector search
+scripts/                    Course ingestion and RAG verification tools
+notes for process/           Source course documents for ingestion
+training/                   Fine-tuning experiment notes (no completed model)
+```
+
+## Troubleshooting
+
+- **Supabase configuration error:** check the two `VITE_SUPABASE_*` values in `.env.local` or Vercel, then restart or redeploy after changing build variables.
+- **Sign-up verification code fails:** check the Supabase Confirm signup template uses `{{ .Token }}`, and use the newest code sent to the same email address.
+- **Tutor says it is not configured:** set `OPENROUTER_API_KEY` as a Supabase Edge Function secret and redeploy the `api` function.
+- **Tutor has no relevant course passage:** ingest the course notes, then run the live retrieval check. The parser dry run does not populate Supabase.
+- **Nested route or SSR errors on Vercel:** confirm the project uses the TanStack Start framework preset and that the build runs with Nitro enabled.
+- **Quiz page has no questions:** apply the Supabase migrations and ensure published quiz-question seed data exists in the database.

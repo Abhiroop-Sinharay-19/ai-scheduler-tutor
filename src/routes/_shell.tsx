@@ -1,30 +1,28 @@
-import { useEffect, useState } from "react";
-import { Outlet, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { getSession } from "@/lib/supabase";
+import { getAuthenticatedUser } from "@/lib/supabase";
 
 export const Route = createFileRoute("/_shell")({
+  // Authentication is stored in browser localStorage, so protected route
+  // loaders must not run during server rendering without the user's session.
+  ssr: false,
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    if (!(await getSession())) throw redirect({ to: "/login" });
+    const user = await getAuthenticatedUser();
+    if (!user) throw redirect({ to: "/login" });
   },
+  pendingComponent: SessionLoading,
   component: ShellLayout,
 });
 
+function SessionLoading() {
+  return (
+    <main className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">
+      Checking your session…
+    </main>
+  );
+}
+
 function ShellLayout() {
-  const navigate = useNavigate();
-  const [authenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => {
-    void getSession().then((session) => {
-      if (session) setAuthenticated(true);
-      else void navigate({ to: "/login", replace: true });
-    });
-  }, [navigate]);
-
-  if (!authenticated)
-    return <main className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">Checking your session…</main>;
-
   return (
     <AppShell>
       <Outlet />

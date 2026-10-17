@@ -1,0 +1,9 @@
+# Install a CUDA-enabled PyTorch wheel first, using pytorch.org's selector for
+# the target machine/CUDA runtime, then install this file.
+transformers>=4.51.0
+datasets>=3.6.0
+accelerate>=1.6.0
+peft>=0.15.0
+trl>=0.26.0
+bitsandbytes>=0.45.0
+sentencepiece>=0.2.0

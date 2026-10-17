@@ -23,6 +23,9 @@ function algorithmFromPath(path: string): AlgorithmId | undefined {
 
 export function GlobalAssistant() {
   const [open, setOpen] = useState(false);
+  const [sessionId] = useState(
+    () => `assistant-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const algorithm = algorithmFromPath(pathname);
   const label = PAGE_LABELS[pathname] ?? "this page";
@@ -52,6 +55,7 @@ export function GlobalAssistant() {
           <div className="min-h-0 flex-1">
             <AIChat
               compact
+              sessionId={sessionId}
               context={{ page: pathname, ...(algorithm ? { algorithm } : {}) }}
               quickPrompts={["Explain this", "Solve this", "Give me a hint", "Another example"]}
             />

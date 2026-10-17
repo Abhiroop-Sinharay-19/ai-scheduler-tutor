@@ -14,7 +14,17 @@ dist-ssr
 .vinxi
 .tanstack/**
 .nitro
+.vercel
+training/artifacts/
 *.local
+
+# Local configuration and credentials (keep the checked-in template only).
+.env
+.env.*
+!.env.example
+
+# Supabase CLI project metadata and generated state.
+supabase/.temp/
 
 # Wrangler / Cloudflare
 .wrangler/

@@ -15,16 +15,18 @@ export function ProcessTable({ processes, algorithm, onChange }: Props) {
   const showPriority = algorithm === "priority";
 
   const update = (id: string, key: keyof ProcessSpec, raw: string) => {
-    const value = Math.max(0, Number(raw.replace(/[^\d]/g, "")) || 0);
+    const parsed = Number(raw.replace(/[^\d]/g, ""));
+    const value = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
     onChange(processes.map((p) => (p.id === id ? { ...p, [key]: value } : p)));
   };
 
   const add = () => {
     const n = processes.length + 1;
-    onChange([
-      ...processes,
-      { id: crypto.randomUUID(), name: `P${n}`, arrival: n - 1, burst: 3, priority: 2 },
-    ]);
+    const nextId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `p-${Date.now()}-${n}`;
+    onChange([...processes, { id: nextId, name: `P${n}`, arrival: n - 1, burst: 3, priority: 2 }]);
   };
 
   return (
@@ -42,7 +44,10 @@ export function ProcessTable({ processes, algorithm, onChange }: Props) {
           </thead>
           <tbody>
             {processes.map((p) => (
-              <tr key={p.id} className="border-t border-border/70 transition-colors hover:bg-surface/60">
+              <tr
+                key={p.id}
+                className="border-t border-border/70 transition-colors hover:bg-surface/60"
+              >
                 <td className="px-4 py-2.5">
                   <span className="flex items-center gap-2 font-medium">
                     <span
@@ -104,7 +109,9 @@ export function ProcessTable({ processes, algorithm, onChange }: Props) {
           <Plus className="size-4" /> Add process
         </Button>
         {showPriority ? (
-          <span className="text-xs text-muted-foreground">Lower priority value = higher priority.</span>
+          <span className="text-xs text-muted-foreground">
+            Lower priority value = higher priority.
+          </span>
         ) : null}
       </div>
     </div>

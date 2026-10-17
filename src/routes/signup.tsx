@@ -35,7 +35,7 @@ function SignupPage() {
         studyYear: String(data.get("studyYear")),
         learningGoal: String(data.get("learningGoal")),
       });
-      if (session.access_token) await navigate({ to: "/dashboard" });
+      if (session?.access_token) await navigate({ to: "/dashboard" });
       else await navigate({ to: "/verify", search: { email: String(data.get("email")) } });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to create your account.");
@@ -78,7 +78,7 @@ function SignupPage() {
           >
             <div className="space-y-2">
               <Label htmlFor="name">Full name</Label>
-              <Input id="name" name="name" required placeholder="Abhi Sharma" />
+              <Input id="name" name="name" required placeholder="Your full name" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -86,29 +86,58 @@ function SignupPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="level">Current OS level</Label>
-              <select id="level" name="level" required defaultValue="Beginner" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <select
+                id="level"
+                name="level"
+                required
+                defaultValue="Beginner"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
                 <option>Beginner</option>
                 <option>Intermediate</option>
                 <option>Advanced</option>
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="institution">Institution <span className="text-muted-foreground">(optional)</span></Label>
-              <Input id="institution" name="institution" maxLength={120} placeholder="University or school" />
+              <Label htmlFor="institution">
+                Institution <span className="text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id="institution"
+                name="institution"
+                maxLength={120}
+                placeholder="University or school"
+              />
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="studyYear">Study year</Label>
-                <select id="studyYear" name="studyYear" defaultValue="" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <select
+                  id="studyYear"
+                  name="studyYear"
+                  defaultValue=""
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
                   <option value="">Prefer not to say</option>
-                  <option>First year</option><option>Second year</option><option>Third year</option><option>Fourth year</option><option>Other</option>
+                  <option>First year</option>
+                  <option>Second year</option>
+                  <option>Third year</option>
+                  <option>Fourth year</option>
+                  <option>Other</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="learningGoal">Primary goal</Label>
-                <select id="learningGoal" name="learningGoal" defaultValue="" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <select
+                  id="learningGoal"
+                  name="learningGoal"
+                  defaultValue=""
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
                   <option value="">Choose later</option>
-                  <option>Understand concepts</option><option>Prepare for exams</option><option>Practice problems</option>
+                  <option>Understand concepts</option>
+                  <option>Prepare for exams</option>
+                  <option>Practice problems</option>
                 </select>
               </div>
             </div>
@@ -124,7 +153,13 @@ function SignupPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm password</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required placeholder="Re-enter your password" />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                placeholder="Re-enter your password"
+              />
             </div>
             {error ? (
               <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>

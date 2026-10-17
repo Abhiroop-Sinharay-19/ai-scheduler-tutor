@@ -78,7 +78,7 @@ export function runSchedule(
   const steps: TimelineStep[] = [];
   const completed: string[] = [];
   let queue: typeof procs = [];
-  let time = procs.length ? Math.min(...procs.map((p) => p.arrival)) : 0;
+  let time = 0;
   let busy = 0;
   let current: (typeof procs)[number] | null = null;
   let sliceUsed = 0;
@@ -100,7 +100,8 @@ export function runSchedule(
     const sorted = [...queue];
     if (algorithm === "sjf" || algorithm === "srtf") {
       sorted.sort(
-        (a, b) => a.remaining - b.remaining || a.arrival - b.arrival || a.name.localeCompare(b.name),
+        (a, b) =>
+          a.remaining - b.remaining || a.arrival - b.arrival || a.name.localeCompare(b.name),
       );
     } else if (algorithm === "priority") {
       sorted.sort(

@@ -13,11 +13,12 @@ export interface ChatContext {
 }
 
 interface Props {
-  context?: ChatContext;
-  quickPrompts?: string[];
-  compact?: boolean;
-  seed?: ChatMessage[];
-  initialQuestion?: string;
+  context?: ChatContext | undefined;
+  sessionId?: string | undefined;
+  quickPrompts?: string[] | undefined;
+  compact?: boolean | undefined;
+  seed?: ChatMessage[] | undefined;
+  initialQuestion?: string | undefined;
 }
 
 const uid = () => Math.random().toString(36).slice(2);
@@ -25,7 +26,9 @@ const uid = () => Math.random().toString(36).slice(2);
 function renderInline(text: string) {
   return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
     part.startsWith("**") && part.endsWith("**") ? (
-      <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>
+      <strong key={i} className="font-semibold text-foreground">
+        {part.slice(2, -2)}
+      </strong>
     ) : (
       <span key={i}>{part}</span>
     ),
@@ -39,7 +42,9 @@ function MessageBody({ content }: { content: string }) {
         if (!line.trim()) return null;
         if (line.trim().startsWith("|")) {
           return (
-            <div key={i} className="font-mono text-xs text-muted-foreground">{line}</div>
+            <div key={i} className="font-mono text-xs text-muted-foreground">
+              {line}
+            </div>
           );
         }
         if (line.trim().startsWith("- ")) {
@@ -56,7 +61,14 @@ function MessageBody({ content }: { content: string }) {
   );
 }
 
-export function AIChat({ context, quickPrompts = [], compact = false, seed, initialQuestion }: Props) {
+export function AIChat({
+  context,
+  sessionId,
+  quickPrompts = [],
+  compact = false,
+  seed,
+  initialQuestion,
+}: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>(
     seed ?? [
       {
@@ -71,6 +83,13 @@ export function AIChat({ context, quickPrompts = [], compact = false, seed, init
   const [input, setInput] = useState(initialQuestion ?? "");
   const [thinking, setThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fallbackSessionId = useRef(`chat-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+
+  useEffect(() => {
+    if (initialQuestion && initialQuestion.trim()) {
+      setInput(initialQuestion);
+    }
+  }, [initialQuestion]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -82,24 +101,74 @@ export function AIChat({ context, quickPrompts = [], compact = false, seed, init
     setMessages((m) => [...m, { id: uid(), role: "user", content: value, createdAt: Date.now() }]);
     setInput("");
     setThinking(true);
-    const { reply } = await postChat({
-      message: value,
-      context: { ...context, ...(mode ? { mode } : {}) },
-    });
-    setThinking(false);
-    setMessages((m) => [...m, { id: uid(), role: "assistant", content: reply, createdAt: Date.now() }]);
+    try {
+      const result = await postChat({
+        message: value,
+        sessionId: sessionId ?? fallbackSessionId.current,
+        history: messages
+          .filter((message) => message.content.trim())
+          .slice(-10)
+          .map(({ role, content }) => ({ role, content })),
+        context: { ...context, ...(mode ? { mode } : {}) },
+      });
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          content: result.reply,
+          createdAt: Date.now(),
+        },
+      ]);
+    } catch (error) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: uid(),
+          role: "assistant",
+          content:
+            error instanceof Error
+              ? error.message
+              : "The tutor could not reach its AI service. Please try again in a moment.",
+          createdAt: Date.now(),
+        },
+      ]);
+    } finally {
+      setThinking(false);
+    }
   };
 
   const tools = [
-    { label: "Attach problem", icon: Paperclip, prompt: "Here is my current process table — walk me through it." },
-    { label: "Generate example", icon: Wand2, prompt: "Generate a practice example for me.", mode: "example" as const },
-    { label: "Explain differently", icon: Lightbulb, prompt: "Explain that with a different analogy." },
-    { label: "Simplify", icon: Baby, prompt: "Simplify that explanation.", mode: "simplify" as const },
+    {
+      label: "Attach problem",
+      icon: Paperclip,
+      prompt: "Here is my current process table — walk me through it.",
+    },
+    {
+      label: "Generate example",
+      icon: Wand2,
+      prompt: "Generate a practice example for me.",
+      mode: "example" as const,
+    },
+    {
+      label: "Explain differently",
+      icon: Lightbulb,
+      prompt: "Explain that with a different analogy.",
+    },
+    {
+      label: "Simplify",
+      icon: Baby,
+      prompt: "Simplify that explanation.",
+      mode: "simplify" as const,
+    },
   ];
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div ref={scrollRef} className={cn("flex-1 space-y-5 overflow-y-auto px-1 py-2", compact && "max-h-72")}>
+      <div
+        ref={scrollRef}
+        className={cn("flex-1 space-y-5 overflow-y-auto px-1 py-2", compact && "max-h-72")}
+      >
         {messages.map((m) => (
           <div
             key={m.id}
@@ -108,10 +177,16 @@ export function AIChat({ context, quickPrompts = [], compact = false, seed, init
             <div
               className={cn(
                 "mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl border border-border",
-                m.role === "assistant" ? "bg-primary/15 text-primary" : "bg-surface-2 text-muted-foreground",
+                m.role === "assistant"
+                  ? "bg-primary/15 text-primary"
+                  : "bg-surface-2 text-muted-foreground",
               )}
             >
-              {m.role === "assistant" ? <Sparkles className="size-4" /> : <span className="text-xs font-semibold">You</span>}
+              {m.role === "assistant" ? (
+                <Sparkles className="size-4" />
+              ) : (
+                <span className="text-xs font-semibold">You</span>
+              )}
             </div>
             <div
               className={cn(
@@ -186,7 +261,12 @@ export function AIChat({ context, quickPrompts = [], compact = false, seed, init
               </Button>
             ))}
           </div>
-          <Button size="sm" onClick={() => void send(input)} disabled={!input.trim() || thinking} className="gap-1.5">
+          <Button
+            size="sm"
+            onClick={() => void send(input)}
+            disabled={!input.trim() || thinking}
+            className="gap-1.5"
+          >
             <Send className="size-4" /> Send
           </Button>
         </div>

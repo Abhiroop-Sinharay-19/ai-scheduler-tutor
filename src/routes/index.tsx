@@ -30,7 +30,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Process Scheduling Tutor — Learn CPU Scheduling Visually" },
       {
         property: "og:description",
-        content: "Animated Gantt charts, step-by-step CPU scheduling simulations and an AI tutor that explains every decision.",
+        content:
+          "Animated Gantt charts, step-by-step CPU scheduling simulations and an AI tutor that explains every decision.",
       },
     ],
   }),
@@ -38,12 +39,36 @@ export const Route = createFileRoute("/")({
 });
 
 const FEATURES = [
-  { icon: BrainCircuit, title: "AI Tutor", desc: "Ask why P2 waited 4ms and get a step-referenced answer, not a textbook paragraph." },
-  { icon: GaugeCircle, title: "Live Simulator", desc: "Edit arrival, burst and priority; the Gantt chart and metrics recompute instantly." },
-  { icon: Timer, title: "Step-by-Step Mode", desc: "Advance one time unit at a time and watch the ready queue evolve." },
-  { icon: ListChecks, title: "Algorithm Library", desc: "FCFS, SJF, SRTF, Round Robin and Priority — with trade-offs and exam questions." },
-  { icon: BarChart3, title: "Gamified Quizzes", desc: "Instant explanations, streaks and weak-area detection after every attempt." },
-  { icon: LineChart, title: "Progress Analytics", desc: "Mastery radar, quiz trend and a study heatmap that shows what to revise." },
+  {
+    icon: BrainCircuit,
+    title: "AI Tutor",
+    desc: "Ask why P2 waited 4ms and get a step-referenced answer, not a textbook paragraph.",
+  },
+  {
+    icon: GaugeCircle,
+    title: "Live Simulator",
+    desc: "Edit arrival, burst and priority; the Gantt chart and metrics recompute instantly.",
+  },
+  {
+    icon: Timer,
+    title: "Step-by-Step Mode",
+    desc: "Advance one time unit at a time and watch the ready queue evolve.",
+  },
+  {
+    icon: ListChecks,
+    title: "Algorithm Library",
+    desc: "FCFS, SJF, SRTF, Round Robin and Priority — with trade-offs and exam questions.",
+  },
+  {
+    icon: BarChart3,
+    title: "Gamified Quizzes",
+    desc: "Instant explanations and progress insights from your saved learning activity.",
+  },
+  {
+    icon: LineChart,
+    title: "Progress Analytics",
+    desc: "Mastery radar, quiz trend and a study heatmap that shows what to revise.",
+  },
 ];
 
 const ALGORITHMS = [
@@ -73,15 +98,24 @@ function Landing() {
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-6">
         <span className="flex items-center gap-2.5 font-semibold tracking-tight">
-          <span className="grid size-9 place-items-center rounded-xl" style={{ background: "var(--gradient-primary)" }}>
+          <span
+            className="grid size-9 place-items-center rounded-xl"
+            style={{ background: "var(--gradient-primary)" }}
+          >
             <Cpu className="size-4.5 text-primary-foreground" />
           </span>
           Scheduling Tutor
         </span>
         <nav className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm"><Link to="/algorithms">Algorithms</Link></Button>
-          <Button asChild variant="ghost" size="sm"><Link to="/login">Sign in</Link></Button>
-          <Button asChild size="sm"><Link to="/login">Open app</Link></Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/algorithms">Algorithms</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/login">Sign in</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link to="/login">Open app</Link>
+          </Button>
         </nav>
       </header>
 
@@ -94,12 +128,20 @@ function Landing() {
             Understand <span className="text-gradient">CPU scheduling</span> by watching it run.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            Simulate FCFS, SJF, SRTF, Round Robin and Priority scheduling with animated Gantt charts, unit-by-unit
-            stepping, and an AI tutor that explains every dispatch decision.
+            Simulate FCFS, SJF, SRTF, Round Robin and Priority scheduling with animated Gantt
+            charts, unit-by-unit stepping, and an AI tutor that explains every dispatch decision.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="gap-2"><Link to="/signup"><Play className="size-4" /> Try the simulator</Link></Button>
-            <Button asChild size="lg" variant="outline" className="gap-2"><Link to="/signup"><BrainCircuit className="size-4" /> Ask the AI tutor</Link></Button>
+            <Button asChild size="lg" className="gap-2">
+              <Link to="/signup">
+                <Play className="size-4" /> Try the simulator
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="gap-2">
+              <Link to="/signup">
+                <BrainCircuit className="size-4" /> Ask the AI tutor
+              </Link>
+            </Button>
           </div>
           <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6">
             {[
@@ -108,8 +150,14 @@ function Landing() {
               { v: 100, s: "%", k: "Visual, step-by-step" },
             ].map((s) => (
               <div key={s.k}>
-                <AnimatedCounter value={s.v} suffix={s.s} className="block text-2xl font-semibold text-foreground" />
-                <dt className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{s.k}</dt>
+                <AnimatedCounter
+                  value={s.v}
+                  suffix={s.s}
+                  className="block text-2xl font-semibold text-foreground"
+                />
+                <dt className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
+                  {s.k}
+                </dt>
               </div>
             ))}
           </dl>
@@ -138,12 +186,20 @@ function Landing() {
 
       <section className="relative z-10 mx-auto max-w-7xl px-5 py-28">
         <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Built for the way scheduling is actually taught</h2>
-          <p className="mt-3 text-muted-foreground">Lecture slides show the final Gantt chart. This shows how it got there.</p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Built for the way scheduling is actually taught
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            Lecture slides show the final Gantt chart. This shows how it got there.
+          </p>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f, i) => (
-            <article key={f.title} className="panel hover-lift p-6" style={{ animation: `fade-up 0.5s ${i * 0.06}s both` }}>
+            <article
+              key={f.title}
+              className="panel hover-lift p-6"
+              style={{ animation: `fade-up 0.5s ${i * 0.06}s both` }}
+            >
               <span className="grid size-10 place-items-center rounded-xl border border-primary/30 bg-primary/10">
                 <f.icon className="size-5 text-primary" />
               </span>
@@ -156,7 +212,9 @@ function Landing() {
 
       <section className="relative z-10 mx-auto max-w-7xl px-5 pb-28">
         <div className="panel p-8 sm:p-10">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Five algorithms, one mental model</h2>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Five algorithms, one mental model
+          </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {ALGORITHMS.map((a) => (
               <Link
@@ -175,13 +233,19 @@ function Landing() {
       </section>
 
       <section className="relative z-10 mx-auto max-w-4xl px-5 pb-32 text-center">
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Ready for your OS exam?</h2>
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          Ready for your OS exam?
+        </h2>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
           Start with a simulation, let the tutor quiz you, and track mastery per algorithm.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button asChild size="lg"><Link to="/signup">Create free account</Link></Button>
-          <Button asChild size="lg" variant="outline"><Link to="/login">Explore the dashboard</Link></Button>
+          <Button asChild size="lg">
+            <Link to="/signup">Create free account</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/login">Explore the dashboard</Link>
+          </Button>
         </div>
       </section>
 

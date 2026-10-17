@@ -1,10 +1,14 @@
-/** Small Supabase Auth client; session refresh is kept explicit to avoid an SDK dependency. */
-const url = import.meta.env["VITE_SUPABASE_URL"] as string | undefined;
-const anonKey = import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined;
+import { createClient, type AuthChangeEvent, type Session, type User } from "@supabase/supabase-js";
+
+const env: Record<string, string | undefined> =
+  typeof import.meta !== "undefined" && import.meta.env
+    ? (import.meta.env as Record<string, string | undefined>)
+    : {};
+const url = env["VITE_SUPABASE_URL"] as string | undefined;
+const anonKey = env["VITE_SUPABASE_ANON_KEY"] as string | undefined;
 const storageKey = "pst.supabase.session";
 
-export type AuthSession = { access_token: string; refresh_token: string; expires_at?: number };
-type AuthResponse = Partial<AuthSession> & { message?: string; error_description?: string };
+export type AuthSession = Session;
 export type SignupProfile = {
   fullName: string;
   level: "Beginner" | "Intermediate" | "Advanced";
@@ -13,84 +17,119 @@ export type SignupProfile = {
   learningGoal?: string;
 };
 
-function configured() {
-  if (!url || !anonKey)
-    throw new Error("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local.");
-}
+let client: ReturnType<typeof createClient> | null = null;
 
-function save(session: AuthResponse) {
-  if (session.access_token && session.refresh_token)
-    localStorage.setItem(storageKey, JSON.stringify({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-      expires_at: session.expires_at,
-    }));
-}
-
-function stored(): AuthSession | null {
-  if (typeof localStorage === "undefined") return null;
-  try {
-    const session = JSON.parse(localStorage.getItem(storageKey) ?? "null") as AuthSession | null;
-    return session?.access_token && session.refresh_token ? session : null;
-  } catch {
-    localStorage.removeItem(storageKey);
-    return null;
+function getClient() {
+  if (!url || !anonKey) {
+    throw new Error(
+      "Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.local.",
+    );
   }
-}
-
-async function auth(path: string, body: unknown): Promise<AuthResponse> {
-  configured();
-  const res = await fetch(`${url}/auth/v1/${path}`, {
-    method: "POST",
-    headers: { apikey: anonKey!, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = (await res.json()) as AuthResponse;
-  if (!res.ok) throw new Error(data.error_description ?? data.message ?? "Authentication failed.");
-  save(data);
-  return data;
-}
-
-export const signIn = (email: string, password: string) => auth("token?grant_type=password", { email, password });
-export const signUp = (email: string, password: string, profile: SignupProfile) =>
-  auth("signup", {
-    email,
-    password,
-    data: {
-      full_name: profile.fullName,
-      level: profile.level,
-      institution: profile.institution || null,
-      study_year: profile.studyYear || null,
-      learning_goal: profile.learningGoal || null,
+  if (typeof window === "undefined") {
+    throw new Error("Supabase browser authentication was requested during server rendering.");
+  }
+  client ??= createClient(url, anonKey, {
+    auth: {
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      persistSession: true,
+      // Keep sessions created by the previous auth helper available to the SDK.
+      storageKey,
     },
   });
+  return client;
+}
 
-export const verifySignupOtp = (email: string, token: string) =>
-  auth("verify", { type: "signup", email, token });
+export async function signIn(email: string, password: string): Promise<Session> {
+  const { data, error } = await getClient().auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  if (!data.session) throw new Error("Supabase sign-in succeeded without creating a session.");
+  return data.session;
+}
 
-export async function getSession(): Promise<AuthSession | null> {
-  const session = stored();
+export async function signUp(
+  email: string,
+  password: string,
+  profile: SignupProfile,
+): Promise<Session | null> {
+  const { data, error } = await getClient().auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: profile.fullName,
+        level: profile.level,
+        institution: profile.institution || null,
+        study_year: profile.studyYear || null,
+        learning_goal: profile.learningGoal || null,
+      },
+    },
+  });
+  if (error) throw error;
+  return data.session;
+}
+
+export async function verifySignupOtp(email: string, token: string): Promise<Session> {
+  const { data, error } = await getClient().auth.verifyOtp({
+    email: email.trim(),
+    token: token.trim(),
+    type: "email",
+  });
+  if (error) throw error;
+  if (!data.session) throw new Error("Email verification succeeded without creating a session.");
+  return data.session;
+}
+
+export async function resendSignupOtp(email: string): Promise<void> {
+  const { error } = await getClient().auth.resend({ type: "signup", email: email.trim() });
+  if (error) throw error;
+}
+
+export async function getSession(): Promise<Session | null> {
+  const { data, error } = await getClient().auth.getSession();
+  if (error) throw error;
+  return data.session;
+}
+
+/** Returns a user verified by Supabase Auth, not just decoded local session data. */
+export async function getAuthenticatedUser(): Promise<User | null> {
+  const session = await getSession();
   if (!session) return null;
-  if (!session.expires_at || session.expires_at * 1000 > Date.now() + 60_000) return session;
-  try {
-    const refreshed = await auth("token?grant_type=refresh_token", { refresh_token: session.refresh_token });
-    return refreshed.access_token && refreshed.refresh_token ? refreshed as AuthSession : null;
-  } catch {
-    signOut();
-    return null;
-  }
+  const { data, error } = await getClient().auth.getUser();
+  if (error) throw error;
+  return data.user;
 }
 
 export async function getAccessToken() {
   return (await getSession())?.access_token ?? null;
 }
 
-export function signOut() {
-  const token = stored()?.access_token;
-  if (typeof localStorage !== "undefined") localStorage.removeItem(storageKey);
-  if (token && url && anonKey)
-    void fetch(`${url}/auth/v1/logout`, {
-      method: "POST",
-      headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
-    });
+/** The decoded subject is used only to scope query cache keys, never as auth proof. */
+export function getSessionUserId(): string | null {
+  if (typeof localStorage === "undefined") return null;
+  try {
+    const session = JSON.parse(localStorage.getItem(storageKey) ?? "null") as {
+      access_token?: string;
+    } | null;
+    const token = session?.access_token;
+    if (!token || typeof atob === "undefined") return null;
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const claims = JSON.parse(atob(normalized)) as { sub?: unknown };
+    return typeof claims.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+export function onAuthStateChange(
+  callback: (event: AuthChangeEvent, session: Session | null) => void,
+) {
+  return getClient().auth.onAuthStateChange(callback).data.subscription;
+}
+
+export async function signOut() {
+  const { error } = await getClient().auth.signOut();
+  if (error) throw error;
 }

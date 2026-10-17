@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Cpu, Play, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Cpu, Play, Pause, RotateCcw } from "lucide-react";
 import { GanttChart, processColor } from "@/components/GanttChart";
 import { MetricsPanel } from "@/components/MetricsPanel";
 import { ProcessTable } from "@/components/ProcessTable";
@@ -16,16 +16,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { postSchedule } from "@/lib/api";
-import { ALGORITHM_LABELS, type AlgorithmId, type ProcessSpec, type ScheduleResult } from "@/lib/scheduling";
+import {
+  ALGORITHM_LABELS,
+  type AlgorithmId,
+  type ProcessSpec,
+  type ScheduleResult,
+} from "@/lib/scheduling";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_shell/simulator")({
   head: () => ({
     meta: [
       { title: "Scheduling Simulator — Process Scheduling Tutor" },
-      { name: "description", content: "Run FCFS, SJF, SRTF, Round Robin and Priority scheduling with animated Gantt charts and step-by-step CPU state." },
+      {
+        name: "description",
+        content:
+          "Run FCFS, SJF, SRTF, Round Robin and Priority scheduling with animated Gantt charts and step-by-step CPU state.",
+      },
       { property: "og:title", content: "Scheduling Simulator — Process Scheduling Tutor" },
-      { property: "og:description", content: "Animated Gantt charts, live metrics and a step-by-step CPU timeline for every scheduling algorithm." },
+      {
+        property: "og:description",
+        content:
+          "Animated Gantt charts, live metrics and a step-by-step CPU timeline for every scheduling algorithm.",
+      },
     ],
   }),
   component: Simulator,
@@ -45,23 +58,51 @@ function Simulator() {
   const [runKey, setRunKey] = useState(0);
   const [stepMode, setStepMode] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const names = useMemo(() => processes.map((p) => p.name), [processes]);
 
-  const run = useCallback(async () => {
+  const runWith = useCallback(async (procs: ProcessSpec[], algo: AlgorithmId, q: number) => {
     setLoading(true);
-    const res = await postSchedule({ algorithm, quantum, processes });
+    const validProcs = procs.filter((p) => p.burst > 0);
+    const effectiveProcs = validProcs.length > 0 ? validProcs : DEFAULT_PROCESSES;
+    const res = await postSchedule({ algorithm: algo, quantum: q, processes: effectiveProcs });
     setResult(res);
     setStepIndex(0);
+    setIsPlaying(false);
     setRunKey((k) => k + 1);
     setLoading(false);
-  }, [algorithm, quantum, processes]);
+  }, []);
+
+  const run = useCallback(async () => {
+    await runWith(processes, algorithm, quantum);
+  }, [processes, algorithm, quantum, runWith]);
 
   useEffect(() => {
     void run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-play timer for step mode
+  useEffect(() => {
+    if (!stepMode || !isPlaying || !result || result.steps.length === 0) return;
+    const interval = setInterval(() => {
+      setStepIndex((current) => {
+        if (current >= result.steps.length - 1) {
+          setIsPlaying(false);
+          return current;
+        }
+        return current + 1;
+      });
+    }, 850);
+    return () => clearInterval(interval);
+  }, [stepMode, isPlaying, result]);
+
+  const handleReset = () => {
+    setProcesses(DEFAULT_PROCESSES);
+    void runWith(DEFAULT_PROCESSES, algorithm, quantum);
+  };
 
   const step = result?.steps[Math.min(stepIndex, (result?.steps.length ?? 1) - 1)] ?? null;
 
@@ -71,9 +112,12 @@ function Simulator() {
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1 text-xs text-muted-foreground">
           <Cpu className="size-3.5 text-primary" /> Interactive engine
         </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Process Scheduling Simulator</h1>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+          Process Scheduling Simulator
+        </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Edit the process table, pick a policy and watch the schedule build itself — then inspect every metric.
+          Edit the process table, pick a policy and watch the schedule build itself — then inspect
+          every metric.
         </p>
       </header>
 
@@ -83,10 +127,14 @@ function Simulator() {
             <div className="space-y-2">
               <Label>Algorithm</Label>
               <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as AlgorithmId)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {(Object.keys(ALGORITHM_LABELS) as AlgorithmId[]).map((id) => (
-                    <SelectItem key={id} value={id}>{ALGORITHM_LABELS[id]}</SelectItem>
+                    <SelectItem key={id} value={id}>
+                      {ALGORITHM_LABELS[id]}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -98,7 +146,9 @@ function Simulator() {
                   id="quantum"
                   inputMode="numeric"
                   value={quantum}
-                  onChange={(e) => setQuantum(Math.max(1, Number(e.target.value.replace(/[^\d]/g, "")) || 1))}
+                  onChange={(e) =>
+                    setQuantum(Math.max(1, Number(e.target.value.replace(/[^\d]/g, "")) || 1))
+                  }
                   className="font-mono"
                 />
               </div>
@@ -107,7 +157,13 @@ function Simulator() {
               <Button onClick={() => void run()} disabled={loading} className="gap-2">
                 <Play className="size-4" /> {loading ? "Running…" : "Run Simulation"}
               </Button>
-              <Button variant="outline" size="icon" onClick={() => setProcesses(DEFAULT_PROCESSES)} aria-label="Reset processes">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleReset}
+                aria-label="Reset processes"
+                title="Reset to default processes"
+              >
                 <RotateCcw className="size-4" />
               </Button>
             </div>
@@ -119,7 +175,9 @@ function Simulator() {
         <section className="panel space-y-4 p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <Label htmlFor="stepmode" className="text-sm font-medium">Step-by-Step Mode</Label>
+              <Label htmlFor="stepmode" className="text-sm font-medium">
+                Step-by-Step Mode
+              </Label>
               <p className="text-xs text-muted-foreground">Inspect the CPU at each time unit.</p>
             </div>
             <Switch id="stepmode" checked={stepMode} onCheckedChange={setStepMode} />
@@ -128,17 +186,49 @@ function Simulator() {
           {stepMode && step ? (
             <div className="space-y-4 animate-fade-in">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm text-muted-foreground">TIME = {step.time} ms</span>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="icon" onClick={() => setStepIndex((i) => Math.max(0, i - 1))} disabled={stepIndex === 0} aria-label="Previous step">
+                <span className="font-mono text-sm text-muted-foreground">
+                  TIME = {step.time} ms
+                </span>
+                <div className="flex gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setIsPlaying((p) => !p);
+                      if (stepIndex >= (result?.steps.length ?? 1) - 1) setStepIndex(0);
+                    }}
+                    aria-label={isPlaying ? "Pause simulation" : "Play step simulation"}
+                    title={isPlaying ? "Pause" : "Auto-advance steps"}
+                  >
+                    {isPlaying ? (
+                      <Pause className="size-4 text-warning" />
+                    ) : (
+                      <Play className="size-4 text-primary" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setStepIndex((i) => Math.max(0, i - 1));
+                    }}
+                    disabled={stepIndex === 0}
+                    aria-label="Previous step"
+                    title="Previous step"
+                  >
                     <ChevronLeft className="size-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setStepIndex((i) => Math.min((result?.steps.length ?? 1) - 1, i + 1))}
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setStepIndex((i) => Math.min((result?.steps.length ?? 1) - 1, i + 1));
+                    }}
                     disabled={stepIndex >= (result?.steps.length ?? 1) - 1}
                     aria-label="Next step"
+                    title="Next step"
                   >
                     <ChevronRight className="size-4" />
                   </Button>
@@ -146,11 +236,15 @@ function Simulator() {
               </div>
 
               <div className="rounded-xl border border-border bg-surface/60 p-4">
-                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">CPU</span>
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  CPU
+                </span>
                 {step.running ? (
                   <div
                     className="mt-2 grid h-14 place-items-center rounded-lg border border-border text-lg font-semibold animate-scale-in"
-                    style={{ background: `color-mix(in oklab, ${processColor(step.running, names)} 40%, transparent)` }}
+                    style={{
+                      background: `color-mix(in oklab, ${processColor(step.running, names)} 40%, transparent)`,
+                    }}
                   >
                     {step.running}
                   </div>
@@ -162,18 +256,24 @@ function Simulator() {
               </div>
 
               <div>
-                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Ready queue</span>
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Ready queue
+                </span>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {step.ready.length ? (
                     step.ready.map((n, i) => (
                       <span key={`${n}-${i}`} className="flex items-center gap-1.5">
                         <span
                           className="rounded-lg border border-border px-2.5 py-1 text-sm font-medium"
-                          style={{ background: `color-mix(in oklab, ${processColor(n, names)} 25%, transparent)` }}
+                          style={{
+                            background: `color-mix(in oklab, ${processColor(n, names)} 25%, transparent)`,
+                          }}
                         >
                           {n}
                         </span>
-                        {i < step.ready.length - 1 ? <span className="text-muted-foreground">→</span> : null}
+                        {i < step.ready.length - 1 ? (
+                          <span className="text-muted-foreground">→</span>
+                        ) : null}
                       </span>
                     ))
                   ) : (
@@ -185,15 +285,21 @@ function Simulator() {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-muted-foreground">Newly arrived</span>
-                  <p className="mt-1 font-medium">{step.arrived.length ? step.arrived.join(", ") : "—"}</p>
+                  <p className="mt-1 font-medium">
+                    {step.arrived.length ? step.arrived.join(", ") : "—"}
+                  </p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Completed</span>
-                  <p className="mt-1 font-medium text-success">{step.completed.length ? step.completed.join(", ") : "—"}</p>
+                  <p className="mt-1 font-medium text-success">
+                    {step.completed.length ? step.completed.join(", ") : "—"}
+                  </p>
                 </div>
               </div>
 
-              <p className="rounded-xl border border-border bg-surface/60 p-3 text-xs text-muted-foreground">{step.note}</p>
+              <p className="rounded-xl border border-border bg-surface/60 p-3 text-xs text-muted-foreground">
+                {step.note}
+              </p>
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
@@ -206,11 +312,19 @@ function Simulator() {
       <section className={cn("panel p-6", !result && "opacity-70")}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold tracking-tight">Gantt Chart</h2>
-          <span className="text-xs text-muted-foreground">{ALGORITHM_LABELS[algorithm]}{algorithm === "rr" ? ` · q = ${quantum}` : ""}</span>
+          <span className="text-xs text-muted-foreground">
+            {ALGORITHM_LABELS[algorithm]}
+            {algorithm === "rr" ? ` · q = ${quantum}` : ""}
+          </span>
         </div>
         <div className="mt-5">
           {result ? (
-            <GanttChart gantt={result.gantt} names={names} runKey={runKey} activeTime={stepMode ? (step?.time ?? null) : null} />
+            <GanttChart
+              gantt={result.gantt}
+              names={names}
+              runKey={runKey}
+              activeTime={stepMode ? (step?.time ?? null) : null}
+            />
           ) : (
             <div className="h-32 animate-pulse rounded-2xl bg-muted/60" />
           )}

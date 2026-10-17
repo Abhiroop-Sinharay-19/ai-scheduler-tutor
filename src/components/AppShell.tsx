@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   BookOpen,
@@ -13,7 +14,7 @@ import {
   X,
   LogOut,
 } from "lucide-react";
-import { student } from "@/lib/mock-data";
+import { progressQuery } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { GlobalAssistant } from "./GlobalAssistant";
 import { signOut } from "@/lib/supabase";
@@ -52,7 +53,12 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                 active ? "opacity-100" : "opacity-0",
               )}
             />
-            <item.icon className={cn("size-4.5 transition-transform group-hover:scale-110", active && "text-primary")} />
+            <item.icon
+              className={cn(
+                "size-4.5 transition-transform group-hover:scale-110",
+                active && "text-primary",
+              )}
+            />
             <span className="font-medium">{item.label}</span>
           </Link>
         );
@@ -62,10 +68,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function SidebarFooter() {
-  const navigate = useNavigate();
+  const { data } = useQuery(progressQuery());
+  const student = data?.student;
   const logout = async () => {
-    signOut();
-    await navigate({ to: "/login" });
+    await signOut();
   };
   return (
     <div className="space-y-2">
@@ -77,11 +83,13 @@ function SidebarFooter() {
           className="grid size-9 place-items-center rounded-lg text-sm font-semibold text-primary-foreground"
           style={{ background: "var(--gradient-primary)" }}
         >
-          {student.name.slice(0, 1)}
+          {student?.firstName.slice(0, 1) || "?"}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-medium">{student.name}</span>
-          <span className="block text-xs text-muted-foreground">{student.level} level</span>
+          <span className="block truncate text-sm font-medium">{student?.name || "Profile"}</span>
+          {student?.level ? (
+            <span className="block text-xs text-muted-foreground">{student.level} level</span>
+          ) : null}
         </span>
       </Link>
       <Link
@@ -123,7 +131,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
             <span className="leading-tight">
               <span className="block text-sm font-semibold">Scheduling Tutor</span>
-              <span className="block text-[11px] text-muted-foreground">AI-powered OS learning</span>
+              <span className="block text-[11px] text-muted-foreground">
+                AI-powered OS learning
+              </span>
             </span>
           </Link>
           <NavLinks />
@@ -152,7 +162,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {open ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm animate-fade-in" onClick={() => setOpen(false)} />
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm animate-fade-in"
+            onClick={() => setOpen(false)}
+          />
           <div className="animate-slide-in-right absolute inset-y-0 right-0 flex w-72 flex-col justify-between border-l border-border bg-sidebar px-4 py-6">
             <div className="space-y-6">
               <div className="flex items-center justify-between px-2">

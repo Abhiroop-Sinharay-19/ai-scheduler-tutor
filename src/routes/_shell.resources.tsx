@@ -14,15 +14,29 @@ export const Route = createFileRoute("/_shell/resources")({
   head: () => ({
     meta: [
       { title: "Resources — Process Scheduling Tutor" },
-      { name: "description", content: "Curated OS notes, worked examples, cheat sheets and exam prep for CPU process scheduling." },
+      {
+        name: "description",
+        content:
+          "Curated OS notes, worked examples, cheat sheets and exam prep for CPU process scheduling.",
+      },
       { property: "og:title", content: "Resources — Process Scheduling Tutor" },
-      { property: "og:description", content: "Notes, worked examples and exam prep for CPU process scheduling." },
+      {
+        property: "og:description",
+        content: "Notes, worked examples and exam prep for CPU process scheduling.",
+      },
     ],
   }),
   component: Resources,
 });
 
-const CATEGORIES = ["All", "OS Notes", "Process Scheduling", "Algorithms", "Examples", "Exam Preparation"] as const;
+const CATEGORIES = [
+  "All",
+  "OS Notes",
+  "Process Scheduling",
+  "Algorithms",
+  "Examples",
+  "Exam Preparation",
+] as const;
 
 function Resources() {
   const { data } = useSuspenseQuery(resourcesQuery);
@@ -44,7 +58,9 @@ function Resources() {
     <div className="space-y-8">
       <header className="animate-fade-up">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Resources</h1>
-        <p className="mt-2 text-muted-foreground">Short, exam-focused material — no 400-page PDFs.</p>
+        <p className="mt-2 text-muted-foreground">
+          Short, exam-focused material — no 400-page PDFs.
+        </p>
       </header>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -79,14 +95,22 @@ function Resources() {
       {filtered.length ? (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((r, i) => (
-            <article key={r.id} className="panel hover-lift flex flex-col p-6" style={{ animation: `fade-up 0.45s ${i * 0.05}s both` }}>
+            <article
+              key={r.id}
+              className="panel hover-lift flex flex-col p-6"
+              style={{ animation: `fade-up 0.45s ${i * 0.05}s both` }}
+            >
               <div className="flex items-center justify-between gap-3">
                 <Badge variant="secondary">{r.type}</Badge>
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Clock className="size-3.5" /> {r.minutes} min</span>
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="size-3.5" /> {r.minutes} min
+                </span>
               </div>
               <h2 className="mt-4 text-base font-semibold tracking-tight">{r.title}</h2>
               <p className="mt-2 flex-1 text-sm text-muted-foreground">{r.description}</p>
-              <span className="mt-5 flex items-center gap-2 text-xs text-primary"><BookOpen className="size-3.5" /> {r.category}</span>
+              <span className="mt-5 flex items-center gap-2 text-xs text-primary">
+                <BookOpen className="size-3.5" /> {r.category}
+              </span>
             </article>
           ))}
         </div>
@@ -94,7 +118,9 @@ function Resources() {
         <div className="panel grid place-items-center p-14 text-center">
           <BookOpen className="size-8 text-muted-foreground" />
           <p className="mt-4 text-sm font-medium">No resources match that search</p>
-          <p className="mt-1 text-sm text-muted-foreground">Try a different keyword or clear the category filter.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Try a different keyword or clear the category filter.
+          </p>
         </div>
       )}
     </div>
