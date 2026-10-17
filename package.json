@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/prepare-pages.mjs",
     "build:dev": "vite build --mode development",
-    "preview": "srvx serve --dir=. --static=.vercel/output/static --entry=.vercel/output/functions/__server.func/index.mjs --host=127.0.0.1 --port=4173 --prod",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
     "ingest:kb": "node --env-file-if-exists=.env.local scripts/ingest-knowledge-base.mjs",
     "ingest:kb:check": "node scripts/ingest-knowledge-base.mjs --dry-run",
     "lint": "eslint .",

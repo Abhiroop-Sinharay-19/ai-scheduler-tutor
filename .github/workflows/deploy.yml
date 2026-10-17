@@ -1,0 +1,70 @@
+name: Deploy Process Scheduling Tutor to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify public Supabase configuration
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          test -n "$VITE_SUPABASE_URL" || { echo "::error::Set repository variable VITE_SUPABASE_URL before deploying."; exit 1; }
+          test -n "$VITE_SUPABASE_ANON_KEY" || { echo "::error::Set repository variable VITE_SUPABASE_ANON_KEY before deploying."; exit 1; }
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build static GitHub Pages app
+        env:
+          GITHUB_PAGES: "true"
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      - name: Upload built site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

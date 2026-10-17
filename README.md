@@ -13,25 +13,25 @@ Fine-tuning is not implemented as a completed training run. The `training/` dire
 
 ## Architecture
 
-| Area | Implementation |
-| --- | --- |
-| Frontend | React 19, Vite 8, TanStack Start and TanStack Router, Tailwind CSS 4 |
-| Hosting | Vercel, using the existing Nitro integration for TanStack Start SSR and routes |
-| Authentication and database | Supabase Auth and PostgreSQL; migrations and RLS policies are in `supabase/migrations/` |
-| API | `supabase/functions/api/`; it verifies Supabase user tokens and uses server-side credentials for protected operations |
-| AI | OpenRouter chat completions called only from the Edge Function |
-| Retrieval | Local document ingestion, `gte-small` embeddings, Supabase pgvector, and a restricted matching RPC |
-| Scheduling | Deterministic calculations in `src/lib/scheduling.ts`; tutor requests also receive scheduling context from the API |
+| Area                        | Implementation                                                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Frontend                    | React 19, Vite 8, TanStack Start and TanStack Router, Tailwind CSS 4                                                  |
+| Hosting                     | GitHub Pages, with a statically built TanStack Start SPA served from `dist/`                                          |
+| Authentication and database | Supabase Auth and PostgreSQL; migrations and RLS policies are in `supabase/migrations/`                               |
+| API                         | `supabase/functions/api/`; it verifies Supabase user tokens and uses server-side credentials for protected operations |
+| AI                          | OpenRouter chat completions called only from the Edge Function                                                        |
+| Retrieval                   | Local document ingestion, `gte-small` embeddings, Supabase pgvector, and a restricted matching RPC                    |
+| Scheduling                  | Deterministic calculations in `src/lib/scheduling.ts`; tutor requests also receive scheduling context from the API    |
 
 Protected user records are scoped by RLS. Quiz answers and knowledge chunks are not readable by browser roles. The browser receives only the Supabase URL and public anon/publishable key; the service-role key and OpenRouter key belong on trusted servers only.
 
 ## Requirements
 
-- Node.js 22.9 or newer and npm (the test and ingestion scripts use Node 22 features).
+- Node.js 22.12 or newer and npm (TanStack Start requires Node 22.12+).
 - A Supabase project for authentication, database, and Edge Functions.
 - An OpenRouter API key for live AI tutor responses.
 - The Supabase CLI for database and Edge Function deployment.
-- A Vercel account for hosted frontend deployment.
+- GitHub Actions enabled and Pages configured to use **GitHub Actions** as the publishing source.
 
 ## Local development
 
@@ -67,30 +67,30 @@ npm run build
 npm run preview
 ```
 
-`npm run preview` serves the production build locally. Check the landing page and a direct nested URL before deploying. `npm run build` uses TanStack Start and Nitro; Vercel handles server rendering and route fallback, so this is not a static-only SPA deployment.
+`npm run preview` serves the production static build locally. The GitHub Pages build runs TanStack Start in SPA mode, writes the site to `dist/`, and creates `dist/404.html` so direct route loads and refreshes return to the client router. GitHub Pages cannot run the app's SSR server; its existing Supabase Edge Function remains the backend.
 
 ## Environment variables and secrets
 
-### Vercel frontend build
+### GitHub Pages frontend build
 
-Set these for Preview and Production deployments:
+Add these repository variables under **Settings → Secrets and variables → Actions → Variables**. They are public client configuration and are embedded in the browser bundle:
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` | Yes | Supabase project URL; public |
-| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon/publishable client key; public |
-| `VITE_API_BASE_URL` | No | Override the Supabase Edge Function API base only when using a separately hosted compatible API |
+| Variable                 | Required | Purpose                                                                                         |
+| ------------------------ | -------- | ----------------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Yes      | Supabase project URL; public                                                                    |
+| `VITE_SUPABASE_ANON_KEY` | Yes      | Supabase anon/publishable client key; public                                                    |
+| `VITE_API_BASE_URL`      | No       | Override the Supabase Edge Function API base only when using a separately hosted compatible API |
 
-`VITE_API_BASE_URL` is sent to the browser and must point to a public API. It is not a place for credentials.
+`VITE_API_BASE_URL` is optional, sent to the browser, and must point to a public API. It is not a place for credentials. The workflow stops with a clear error if either required Supabase variable is missing.
 
 ### Supabase Edge Function secrets
 
 Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions. Set the AI provider secret through the Supabase CLI or project dashboard:
 
-| Secret | Required | Purpose |
-| --- | --- | --- |
-| `OPENROUTER_API_KEY` | Yes for live AI responses | OpenRouter credential; server-side only |
-| `OPENROUTER_MODEL` | No | Model name; defaults to `qwen/qwen3-235b-a22b-2507` |
+| Secret               | Required                  | Purpose                                             |
+| -------------------- | ------------------------- | --------------------------------------------------- |
+| `OPENROUTER_API_KEY` | Yes for live AI responses | OpenRouter credential; server-side only             |
+| `OPENROUTER_MODEL`   | No                        | Model name; defaults to `qwen/qwen3-235b-a22b-2507` |
 
 The function also has an opt-in OpenAI-compatible endpoint configuration (`FINETUNED_QWEN_BASE_URL`, `FINETUNED_QWEN_MODEL`, and `FINETUNED_QWEN_API_KEY`). Leave all three unset unless a trained model is hosted and ready; partial configuration causes the tutor to report a configuration error.
 
@@ -98,15 +98,16 @@ The function also has an opt-in OpenAI-compatible endpoint configuration (`FINET
 
 For `npm run ingest:kb`, keep `SUPABASE_SERVICE_ROLE_KEY` in the ignored `.env.local` file. `SUPABASE_URL` is accepted by the script; otherwise it uses `VITE_SUPABASE_URL`. Never commit `.env.local`, `.env`, or service credentials.
 
-## Deploy the frontend to Vercel
+## Deploy the frontend to GitHub Pages
 
-1. Push the intended GitHub branch and import the repository in Vercel. Set the project root to the repository root and select the TanStack Start framework preset if Vercel does not detect it automatically.
-2. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for Preview and Production. Do not add server secrets to Vercel's frontend variables.
-3. Deploy with Vercel's detected build settings (`npm run build`). Nitro produces Vercel-compatible server output and handles SSR and nested routes.
-4. In Supabase **Authentication → URL Configuration**, set the production site URL and allow the deployed frontend URL. Add the local development URL while developing.
-5. Open the deployed site and check the landing page, sign-up and email verification, sign-in, a simulator route, and an authenticated data-backed page.
+1. Set the `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` repository variables described above. Do not add service-role or OpenRouter keys to GitHub Pages or the frontend build.
+2. In repository **Settings → Pages → Build and deployment**, select **GitHub Actions** as the source.
+3. Push to `main` to run `.github/workflows/deploy.yml`, or start **Deploy Process Scheduling Tutor to GitHub Pages** from the Actions tab. The workflow runs `npm ci`, lint, type-check, tests, and the production build, then uploads only `dist/` with the official Pages artifact action.
+4. The project site URL is `https://<owner>.github.io/<repository>/` (for this repository: `https://abhiroop-sinharay-19.github.io/ai-scheduler-tutor/`). The workflow sets Vite's base path to `/ai-scheduler-tutor/`; the router and assets use the same base.
+5. In Supabase **Authentication → URL Configuration**, set the site URL and allow the published Pages URL. Add the local development URL while developing.
+6. Check the Actions run and open the Pages URL. Verify the landing page, sign-up and email verification, sign-in, simulator, and authenticated data-backed routes.
 
-Vercel's TanStack Start/Nitro detection and setup are described in the [Vercel deployment guide](https://vercel.com/kb/guide/deploy-a-tanstack-start-app-to-vercel) and [TanStack hosting guide](https://tanstack.com/start/latest/docs/framework/react/guide/hosting). The project uses server rendering, so GitHub Pages is not an appropriate host for this architecture.
+This is a client-rendered static deployment. Supabase Auth, PostgreSQL, RLS, the Edge Function, OpenRouter calls, and pgvector retrieval remain on Supabase; private credentials are not moved into the frontend. TanStack Start's SPA mode is intended for static hosts and generates the application shell at build time ([TanStack SPA mode](https://tanstack.com/start/latest/docs/framework/react/guide/spa-mode)). GitHub's official Pages workflow uploads the generated artifact rather than repository source ([GitHub Pages Actions guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)).
 
 ## Deploy Supabase migrations and the API
 
@@ -160,9 +161,10 @@ training/                   Fine-tuning experiment notes (no completed model)
 
 ## Troubleshooting
 
-- **Supabase configuration error:** check the two `VITE_SUPABASE_*` values in `.env.local` or Vercel, then restart or redeploy after changing build variables.
+- **Supabase configuration error:** check the two `VITE_SUPABASE_*` values in `.env.local` or the GitHub Actions repository variables, then restart or redeploy after changing build variables.
 - **Sign-up verification code fails:** check the Supabase Confirm signup template uses `{{ .Token }}`, and use the newest code sent to the same email address.
 - **Tutor says it is not configured:** set `OPENROUTER_API_KEY` as a Supabase Edge Function secret and redeploy the `api` function.
 - **Tutor has no relevant course passage:** ingest the course notes, then run the live retrieval check. The parser dry run does not populate Supabase.
-- **Nested route or SSR errors on Vercel:** confirm the project uses the TanStack Start framework preset and that the build runs with Nitro enabled.
+- **Pages shows the README or source files:** confirm Pages uses **GitHub Actions** and inspect that the workflow uploaded `dist/`, not the repository root.
+- **Nested route refresh returns 404:** confirm `dist/404.html` exists and matches `dist/index.html`, and that the Pages base is `/ai-scheduler-tutor/`.
 - **Quiz page has no questions:** apply the Supabase migrations and ensure published quiz-question seed data exists in the database.
